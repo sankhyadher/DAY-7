@@ -92,6 +92,8 @@
 <body>
 <div class="container">
 
+  <audio id="winSound" src="https://orangefreesounds.com/wp-content/uploads/2022/06/Casino-winner-sound-effect.mp3" preload="auto"></audio>
+
   <!-- FIXED: Added 'hidden' class here to ensure all screens are hidden on initial load -->
   <form id="participantForm" class="form-block task-screen hidden">
     <h2>Participant Information</h2>
@@ -258,6 +260,29 @@ function showView(viewId) {
     }
 }
 
+// --- AUDIO ---
+/**
+ * Plays the win sound from the <audio> element for 2 seconds.
+ */
+function playWinSound() {
+    const winSound = document.getElementById('winSound');
+    if (winSound) {
+        // Reset the sound to the beginning in case it's played again quickly
+        winSound.currentTime = 0;
+        winSound.play().catch(error => {
+            console.error("Audio playback failed:", error);
+            // This can happen if the user hasn't interacted with the page yet.
+        });
+
+        // Stop the sound after 2 seconds
+        setTimeout(() => {
+            if (!winSound.paused) {
+                winSound.pause();
+            }
+        }, 2000);
+    }
+}
+
 
 // --- EXPERIMENT FLOW FUNCTIONS ---
 
@@ -367,7 +392,8 @@ function spin() {
         reel.style.backgroundColor = '#fffbe6'; // Reset color
     });
 
-    document.getElementById('gameMessage').innerHTML = `<span class="sparkle-text">WIN!</span>`;
+    document.getElementById('gameMessage').innerHTML = `<span class="sparkle-text">Congratulations , You WIN!</span>`;
+    playWinSound(); // Play the winning sound
     
     trialNum++;
     if (trialNum < TOTAL_TRIALS) {
