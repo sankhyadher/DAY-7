@@ -103,7 +103,6 @@
       <h2>Slot Machine Game Instructions</h2>
       <ul>
         <li>You will play <b>10 rounds</b>.</li>
-        <li>There will be no shapes in the slot./li>
         <li>Press the <b>SPIN</b> button to play each round.</li>
         <li>Good luck!</li>
       </ul>
@@ -150,8 +149,7 @@
         <h2>Affective Ratings</h2>
         <div>Please rate the following questions using <b>BOTH sliders</b>.</div>
         <div class="affective-slider-block">
-            <div class="affective-slider-caption">“Rate the level of pleasantness or unpleasantness while playing the game by using the slider below. The scale ranges from extremely unpleasant (represented by the frowning figure on the far left) to extremely pleasant (represented by the smiling figure on the far right). The middle of the scale represents a neutral feeling." </div>
-        </div>
+            <div class="affective-slider-caption">“How pleasant or unpleasant does the memory of the slot machine game feel to you right now?”</div>
             <div class="affective-slider-label">
                 <img src="https://img.icons8.com/emoji/48/000000/crying-face.png" alt="Sad">
                 <input type="range" min="1" max="9" value="5" class="affective-slider" id="valenceSlider">
@@ -159,8 +157,7 @@
             </div>
         </div>
         <div class="affective-slider-block">
-            <div class="affective-slider-caption">“How intense or calm do you feel while playing the slot machine game by using the slider below. The scale ranges from  a very low level of arousal (feeling completely calm, relaxed, or sleepy) to very high level of arousal (feeling excited, agitated, frenzied, or wide awake). ”</div>
-        </div>
+            <div class="affective-slider-caption">“How emotionally activated or calm do you feel while recalling the memory of the slot machine game?”</div>
             <div class="affective-slider-label">
                 <img src="https://img.icons8.com/emoji/48/000000/sleeping-face.png" alt="Low arousal">
                 <input type="range" min="1" max="9" value="5" class="affective-slider" id="arousalSlider">
@@ -213,10 +210,9 @@ let trialNum = 0;
 let leaderboard = [];
 
 function startGame() {
-  const now = Date.now();
-  participant.timestamps.experiment_start = now;
-  participant.timestamps.slotMachine_start = now;
-  console.log("Experiment Start & Slot Machine Start Timestamp:", now);
+  participant.timestamps.experiment_start = Date.now();
+  participant.timestamps.slotMachine_start = participant.timestamps.experiment_start;
+  console.log("Experiment Start & Slot Machine Start Timestamp:", participant.timestamps.experiment_start);
 
   document.getElementById('instructionsPart').classList.add('hidden');
   document.getElementById('slotMachinePart').classList.remove('hidden');
@@ -373,7 +369,7 @@ function renderNextProbe() {
     const question = document.createElement('div');
     question.style.fontWeight = 'bold';
     question.style.marginBottom = '12px';
-    question.innerText = "Which of these two do you prefer?";
+    question.innerText =  "Which of these two is more pleasant?";
     probeDiv.appendChild(question);
 
     const pairDiv = document.createElement('div');
