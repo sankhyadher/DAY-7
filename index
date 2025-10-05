@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Experiment Protocol</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    /* General Styles */
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #222; color: #eee; margin: 0; }
+    .container { max-width: 700px; margin: 0 auto; padding: 24px; }
+    .center { text-align: center; }
+    .hidden { display: none; }
+
+    /* Baseline Screen Styles */
+    .fullscreen-task {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #222;
+    }
+    .fixation-cross { font-size: 5rem; font-weight: bold; }
+    .baseline-text { font-size: 1.2rem; margin-top: 20px; }
+
+    /* Instructions Styles */
+    .instructions-container { background: #333; padding: 24px; border-radius: 12px; max-width: 600px; margin: 32px auto; }
+
+    /* Slot Machine Styles */
+    .slot-machine-layout { display: flex; flex-direction: row; gap: 32px; align-items: flex-start; }
+    .slot-machine { background: #3b1e00; border-radius: 24px; padding: 32px 24px 24px 24px; box-shadow: 0 8px 32px #000a; margin-bottom: 24px; flex: 3; position: relative;}
+    .reels { display: flex; justify-content: center; gap: 24px; margin-bottom: 20px; }
+    .reel {
+      width: 100px; height: 100px; background: #fffbe6;
+      border: 6px solid #bfa145; border-radius: 16px; display: flex; align-items: center; justify-content: center;
+      font-size: 4rem; box-shadow: 0 2px 12px #000a, 0 0 24px #fff70066 inset;
+    }
+    .chips { display: flex; justify-content: center; gap: 18px; margin-bottom: 18px; }
+    .chip {
+      width: 56px; height: 56px; border-radius: 50%; background: #ffe066;
+      border: 4px solid #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; cursor: pointer; transition: border 0.2s, box-shadow 0.2s;
+      box-shadow: 0 2px 10px #000a;
+      margin: 0 2px;
+    }
+    .chip.selected { border: 4px solid #ff3; box-shadow: 0 0 16px #fff700; }
+    .spin-btn {
+      background: linear-gradient(90deg, #ff2d2d 60%, #ffb300 100%);
+      color: #fff; padding: 16px 40px; border: none; border-radius: 12px; font-size: 1.5rem; cursor: pointer; margin-bottom: 14px;
+      box-shadow: 0 2px 8px #000a, 0 0 16px #fff70055;
+      font-weight: bold; letter-spacing: 1px; transition: filter 0.2s;
+    }
+    .spin-btn:disabled { background: #888; cursor: not-allowed; filter: grayscale(0.5); }
+    .message { font-size: 1.25rem; margin: 14px 0; min-height: 40px;}
+    .leaderboard { background: #1a1203; border-radius: 16px; padding: 18px 16px; max-width: 260px; margin: 0; box-shadow: 0 2px 12px #000a; flex: 1;}
+    .leaderboard h3 { margin: 0 0 10px 0; color: #ffd700; text-align: center; letter-spacing: 1px; }
+    .leaderboard-list { list-style: none; padding: 0; margin: 0; }
+    .leaderboard-list li { padding: 6px 0; font-size: 1.1rem; }
+    .player { color: #fff700; font-weight: bold; background: #3b2e00; border-radius: 6px; padding: 2px 8px;}
+    .sparkle-text {
+      animation: sparkle-text 0.7s alternate infinite;
+      text-shadow: 0 0 12px #fff700, 0 0 24px #fff70099;
+    }
+    @keyframes sparkle-text {
+      0% { text-shadow: 0 0 12px #fff700, 0 0 24px #fff70099; }
+      100% { text-shadow: 0 0 32px #fff700, 0 0 48px #fff700cc; }
+    }
+    
+    /* Scales Form Styles */
+    .form-block { background: #333; padding: 24px; border-radius: 12px; max-width: 600px; margin: 32px auto; }
+    .question { margin-bottom: 18px; }
+    button { padding: 8px 18px; border-radius: 6px; border: none; background: #0a8; color: #fff; font-weight: bold; cursor: pointer; }
+
+    /* Affective Scale Specific Styles */
+    .affective-slider-block { margin: 30px 0; }
+    .affective-slider-label { display: flex; align-items: center; gap: 15px; }
+    .affective-slider { width: 100%; }
+    .affective-slider-caption { text-align: center; margin-top: 10px; font-style: italic; color: #ccc; }
+
+    /* Probe Task Styles */
+    .probe-pair { display: flex; gap: 32px; justify-content: center; margin: 18px 0; }
+    .probe-btn {
+        border: 3px solid #666; background: #2c2c2c; border-radius: 8px;
+        padding: 8px; cursor: pointer; width: 80px; height: 80px;
+        transition: border-color 0.2s, background-color 0.2s;
+    }
+    .probe-btn:hover { border-color: #999; }
+    
+    @media (max-width: 900px) {
+      .slot-machine-layout { flex-direction: column; }
+      .leaderboard { max-width: 100%; margin-top: 24px;}
+    }
+  </style>
+</head>
+<body>
+
+<div id="baselinePart" class="fullscreen-task">
+    <div class="fixation-cross">+</div>
+    <div class="baseline-text">Please relax and focus on the cross for the next 2 minutes.</div>
+</div>
+
+<div id="instructionsPart" class="hidden">
+    <div class="instructions-container">
+      <h2>Slot Machine Game Instructions</h2>
+      <ul>
+        <li>You will play <b>10 rounds</b>.</li>
+        <li>There will be no shapes in the slot./li>
+        <li>Press the <b>SPIN</b> button to play each round.</li>
+        <li>Good luck!</li>
+      </ul>
+      <div class="center"><button class="spin-btn" onclick="startGame()">Start Game</button></div>
+    </div>
+</div>
+
+<div id="slotMachinePart" class="hidden">
+  <div class="container">
+    <div class="slot-machine-layout" id="gameLayout">
+      <div id="game" class="slot-machine">
+        <div class="center">
+          <h2>Slot Machine Game</h2>
+          <div id="trialInfo"></div>
+        </div>
+        <div class="reels-bg"><div class="reels" id="reels"></div></div>
+        <div class="chips" id="chips">
+          <div class="chip" data-value="1">$1</div><div class="chip" data-value="5">$5</div>
+          <div class="chip" data-value="10">$10</div><div class="chip" data-value="20">$20</div>
+        </div>
+        <div class="center message" id="gameMessage"></div>
+        <div class="center" style="margin-top:10px;">
+          <button class="spin-btn" id="spinBtn" onclick="spin()">SPIN</button>
+        </div>
+      </div>
+      <div class="leaderboard" id="leaderboard">
+        <h3>Leaderboard</h3>
+        <ol class="leaderboard-list" id="leaderboardList"></ol>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="scalesPart" class="hidden">
+    <form id="participantForm" class="form-block">
+        <h2>Participant Information</h2>
+        <div class="question"><label>Participant ID: <input type="text" id="participantId" required></label></div>
+        <div class="question"><label>Session ID: <input type="text" id="sessionId" required></label></div>
+        <div class="question"><label>Group Number: <input type="number" id="groupNumber" required min="1"></label></div>
+        <button type="submit">Continue</button>
+    </form>
+
+    <form class="form-block hidden" id="affectiveForm">
+        <h2>Affective Ratings</h2>
+        <div>Please rate the following questions using <b>BOTH sliders</b>.</div>
+        <div class="affective-slider-block">
+            <div class="affective-slider-caption">“Rate the level of pleasantness or unpleasantness while playing the game by using the slider below. The scale ranges from extremely unpleasant (represented by the frowning figure on the far left) to extremely pleasant (represented by the smiling figure on the far right). The middle of the scale represents a neutral feeling." </div>
+        </div>
+            <div class="affective-slider-label">
+                <img src="https://img.icons8.com/emoji/48/000000/crying-face.png" alt="Sad">
+                <input type="range" min="1" max="9" value="5" class="affective-slider" id="valenceSlider">
+                <img src="https://em-content.zobj.net/thumbs/240/apple/354/grinning-face_1f600.png" alt="Happy" width="42" height="42">
+            </div>
+        </div>
+        <div class="affective-slider-block">
+            <div class="affective-slider-caption">“How intense or calm do you feel while playing the slot machine game by using the slider below. The scale ranges from  a very low level of arousal (feeling completely calm, relaxed, or sleepy) to very high level of arousal (feeling excited, agitated, frenzied, or wide awake). ”</div>
+        </div>
+            <div class="affective-slider-label">
+                <img src="https://img.icons8.com/emoji/48/000000/sleeping-face.png" alt="Low arousal">
+                <input type="range" min="1" max="9" value="5" class="affective-slider" id="arousalSlider">
+                <img src="https://img.icons8.com/emoji/48/000000/astonished-face.png" alt="High arousal">
+            </div>
+        </div>
+        <button type="submit">Continue</button>
+    </form>
+
+    <div id="probeTask" class="form-block hidden">
+      <h2>Choice Task</h2>
+      <div id="probePairs"></div>
+      <div class="center">
+          <button id="finishBtn" class="hidden" onclick="finishExperiment()">Finish Experiment</button>
+      </div>
+    </div>
+
+    <div id="thankYou" class="form-block hidden">
+        <h2>Thank you for participating!</h2>
+        <div>Your responses have been recorded.</div>
+    </div>
+</div>
+
+<script>
+// --- GLOBAL DATA OBJECT ---
+let participant = {
+  participantId: '',
+  sessionId: '',
+  groupNumber: '',
+  affective: {},
+  probe: [],
+  timestamps: {}
+};
+
+// --- STIMULUS DEFINITIONS FOR PROBE TASK ---
+const shapeSVGs = {
+  'sphere': `<svg width="60" height="60" viewBox="0 0 80 80"><defs><radialGradient id="g1" cx="50%" cy="40%" r="50%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#a3f"/></radialGradient></defs><ellipse cx="40" cy="40" rx="32" ry="32" fill="url(#g1)" stroke="#5c2a7c" stroke-width="4"/></svg>`,
+  'cube': `<svg width="60" height="60" viewBox="0 0 80 80"><defs><linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#3a6"/></linearGradient></defs><rect x="16" y="16" width="48" height="48" rx="8" fill="url(#g2)" stroke="#2a7c5c" stroke-width="4"/></svg>`,
+  'pyramid': `<svg width="60" height="60" viewBox="0 0 80 80"><defs><linearGradient id="g3" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#a3f"/></linearGradient></defs><polygon points="40,12 68,68 12,68" fill="url(#g3)" stroke="#5c2a7c" stroke-width="4"/></svg>`,
+  'cylinder': `<svg width="60" height="60" viewBox="0 0 80 80"><defs><linearGradient id="g4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#3a6"/></linearGradient></defs><ellipse cx="40" cy="20" rx="24" ry="10" fill="#fff" opacity="0.5"/><rect x="16" y="20" width="48" height="40" rx="24" fill="url(#g4)" stroke="#2a7c5c" stroke-width="4"/><ellipse cx="40" cy="60" rx="24" ry="10" fill="#3a6" stroke="#2a7c5c" stroke-width="4"/></svg>`
+};
+const probeSymbolsA = ['sphere', 'pyramid'];
+const probeSymbolsB = ['cube', 'cylinder'];
+
+
+// --- PART 1: SLOT MACHINE SCRIPT ---
+const TOTAL_TRIALS = 10;
+const winSound = new Audio("https://orangefreesounds.com/wp-content/uploads/2022/06/Casino-winner-sound-effect.mp3");
+let trialNum = 0;
+let leaderboard = [];
+
+function startGame() {
+  const now = Date.now();
+  participant.timestamps.experiment_start = now;
+  participant.timestamps.slotMachine_start = now;
+  console.log("Experiment Start & Slot Machine Start Timestamp:", now);
+
+  document.getElementById('instructionsPart').classList.add('hidden');
+  document.getElementById('slotMachinePart').classList.remove('hidden');
+
+  trialNum = 0;
+  leaderboard = [{name: "You", score: 100}];
+  for (let i = 1; i <= 10; i++) {
+    leaderboard.push({name: "Player " + i, score: 100 - i});
+  }
+  
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.onclick = function() {
+      document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+      chip.classList.add('selected');
+    }
+  });
+  
+  updateGameUI();
+  renderLeaderboard();
+}
+
+function updateGameUI() {
+  document.getElementById('trialInfo').innerHTML = `<b>Trial ${trialNum + 1} of ${TOTAL_TRIALS}</b>`;
+  renderReels();
+  document.getElementById('gameMessage').innerHTML = '';
+  document.getElementById('spinBtn').disabled = false;
+  document.querySelectorAll('.chip').forEach(chip => chip.classList.remove('selected'));
+  document.querySelector('.chip[data-value="1"]').classList.add('selected');
+}
+
+function renderReels() {
+  const reelsDiv = document.getElementById('reels');
+  reelsDiv.innerHTML = '';
+  for (let i = 0; i < 3; i++) {
+    const div = document.createElement('div');
+    div.className = 'reel';
+    div.innerHTML = ''; // Keep reels blank
+    reelsDiv.appendChild(div);
+  }
+}
+
+function renderLeaderboard() {
+  const list = document.getElementById('leaderboardList');
+  list.innerHTML = '';
+  leaderboard.forEach((l,i) => {
+    const li = document.createElement('li');
+    li.innerText = `${l.name} - $${l.score}`;
+    if (i === 0) li.className = 'player';
+    list.appendChild(li);
+  });
+}
+
+function spin() {
+  document.getElementById('spinBtn').disabled = true;
+  document.getElementById('gameMessage').innerHTML = '';
+  
+  setTimeout(() => {
+    winSound.play().catch(e => console.error("Audio play failed:", e));
+    
+    setTimeout(() => {
+        winSound.pause();
+        winSound.currentTime = 0;
+    }, 2000);
+
+    document.getElementById('gameMessage').innerHTML = `<span class="sparkle-text">WIN!</span>`;
+    trialNum++;
+
+    const nextTrialDelay = 2200; 
+    if (trialNum < TOTAL_TRIALS) {
+      setTimeout(updateGameUI, nextTrialDelay);
+    } else {
+      setTimeout(endGame, nextTrialDelay);
+    }
+  }, 1000);
+}
+
+function endGame() {
+  const now = Date.now();
+  participant.timestamps.slotMachine_end = now;
+  participant.timestamps.participantInfo_start = now;
+  console.log("Slot Machine End & Participant Info Start Timestamp:", now);
+
+  document.getElementById('slotMachinePart').classList.add('hidden');
+  document.getElementById('scalesPart').classList.remove('hidden');
+}
+
+
+// --- PART 2: SCALES & PROBE SCRIPT ---
+
+document.getElementById('participantForm').onsubmit = function(e) {
+  e.preventDefault();
+  const now = Date.now();
+  participant.timestamps.participantInfo_end = now;
+  participant.timestamps.affectiveRating_start = now;
+  console.log("Participant Info End & Affective Rating Start Timestamp:", now);
+
+  participant.participantId = document.getElementById('participantId').value.trim();
+  participant.sessionId = document.getElementById('sessionId').value.trim();
+  participant.groupNumber = document.getElementById('groupNumber').value;
+  
+  document.getElementById('participantForm').classList.add('hidden');
+  document.getElementById('affectiveForm').classList.remove('hidden');
+};
+
+document.getElementById('affectiveForm').onsubmit = function(e) {
+  e.preventDefault();
+  const now = Date.now();
+  participant.timestamps.affectiveRating_end = now;
+  participant.timestamps.probeTask_start = now;
+  console.log("Affective Rating End & Probe Task Start Timestamp:", now);
+
+  participant.affective.valence = Number(document.getElementById('valenceSlider').value);
+  participant.affective.arousal = Number(document.getElementById('arousalSlider').value);
+  participant.affective.reactionTime = now - participant.timestamps.affectiveRating_start;
+  
+  document.getElementById('affectiveForm').classList.add('hidden');
+  showProbeTask();
+};
+
+
+// --- Binary Probe Task ---
+let probePairs = [];
+let currentProbeIndex = 0;
+
+function showProbeTask() {
+  document.getElementById('probeTask').classList.remove('hidden');
+  probePairs = [];
+  probeSymbolsA.forEach(symA => {
+    probeSymbolsB.forEach(symB => {
+      probePairs.push([symA, symB]);
+    });
+  });
+  
+  // Shuffle the pairs for random presentation order
+  probePairs.sort(() => Math.random() - 0.5);
+
+  currentProbeIndex = 0;
+  renderNextProbe();
+}
+
+function renderNextProbe() {
+    const probeDiv = document.getElementById('probePairs');
+    probeDiv.innerHTML = '';
+
+    if (currentProbeIndex >= probePairs.length) {
+        // End of probe task
+        document.getElementById('finishBtn').classList.remove('hidden');
+        return;
+    }
+
+    let [a, b] = probePairs[currentProbeIndex];
+    if (Math.random() > 0.5) [a, b] = [b, a]; // Randomize left/right position
+
+    const question = document.createElement('div');
+    question.style.fontWeight = 'bold';
+    question.style.marginBottom = '12px';
+    question.innerText = "Which of these two do you prefer?";
+    probeDiv.appendChild(question);
+
+    const pairDiv = document.createElement('div');
+    pairDiv.className = 'probe-pair';
+    const btnA = document.createElement('button');
+    btnA.className = 'probe-btn';
+    btnA.innerHTML = shapeSVGs[a];
+    const btnB = document.createElement('button');
+    btnB.className = 'probe-btn';
+    btnB.innerHTML = shapeSVGs[b];
+
+    let probeStart = Date.now();
+    btnA.onclick = (e) => { e.preventDefault(); recordProbe(a, b, a, probeStart); };
+    btnB.onclick = (e) => { e.preventDefault(); recordProbe(a, b, b, probeStart); };
+    pairDiv.appendChild(btnA);
+    pairDiv.appendChild(btnB);
+    probeDiv.appendChild(pairDiv);
+}
+
+function recordProbe(itemA, itemB, choice, probeStartTime) {
+    participant.probe.push({
+      pair: [itemA, itemB],
+      choice: choice,
+      isChoiceA: probeSymbolsA.includes(choice), // True if they chose an item from the first set
+      reactionTime: Date.now() - probeStartTime
+    });
+    currentProbeIndex++;
+    renderNextProbe();
+}
+
+
+// --- FINISH & ONLOAD ---
+
+function finishExperiment() {
+  const now = Date.now();
+  participant.timestamps.probeTask_end = now;
+  participant.timestamps.experiment_end = now;
+  console.log("Probe Task End & Experiment End Timestamp:", now);
+  
+  document.getElementById('probeTask').classList.add('hidden');
+  document.getElementById('thankYou').classList.remove('hidden');
+  
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(participant, null, 2));
+  const dlAnchor = document.createElement('a');
+  dlAnchor.setAttribute("href", dataStr);
+  dlAnchor.setAttribute("download", `P${participant.participantId}_S${participant.sessionId}_G${participant.groupNumber}_data.json`);
+  document.body.appendChild(dlAnchor);
+  dlAnchor.click();
+  dlAnchor.remove();
+  console.log('Final Participant Data:', participant);
+}
+
+// Handles the initial baseline period
+function startBaseline() {
+    const now = Date.now();
+    participant.timestamps.baseline_start = now;
+    console.log("Baseline Start Timestamp:", now);
+
+    document.getElementById('baselinePart').classList.remove('hidden');
+
+    setTimeout(() => {
+        const end_now = Date.now();
+        participant.timestamps.baseline_end = end_now;
+        console.log("Baseline End Timestamp:", end_now);
+
+        document.getElementById('baselinePart').classList.add('hidden');
+        document.getElementById('instructionsPart').classList.remove('hidden');
+    }, 120000); // 2 minutes = 120,000 ms
+}
+
+
+window.onload = function() {
+    // Hide all sections first
+    document.getElementById('instructionsPart').classList.add('hidden');
+    document.getElementById('slotMachinePart').classList.add('hidden');
+    document.getElementById('scalesPart').classList.add('hidden');
+    
+    // Begin the experiment with the baseline task
+    startBaseline();
+};
+</script>
+</body>
+</html>
