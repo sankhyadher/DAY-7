@@ -2,54 +2,47 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Experiment Protocol</title>
+  <title>Psychology Experiment</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    /* General Styles */
-    body { font-family: 'Segoe UI', Arial, sans-serif; background: #222; color: #eee; margin: 0; overflow: hidden; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #2d1a09; color: #eee; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh;}
+    .container { max-width: 700px; margin: 0 auto; padding: 24px; }
     .center { text-align: center; }
-
-    /* --- FIX: Page containers for strict separation --- */
-    .page {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        display: none; /* All pages are hidden by default */
-        justify-content: center;
-        align-items: center;
-        overflow-y: auto; /* Allow scrolling if content is long */
+    
+    /* --- CRITICAL FIX: Ensures elements are always hidden when this class is applied --- */
+    .hidden {
+      display: none !important;
     }
 
-    .fixation-cross { font-size: 5rem; font-weight: bold; }
-    .baseline-text { font-size: 1.2rem; margin-top: 20px; }
-    #baselineTimer { color: #ffd700; font-weight: bold; margin-top: 20px; }
-
-    /* Component Styles (Instructions, Forms, etc.) */
-    .container { max-width: 700px; padding: 24px; }
-    .instructions-container, .form-block { 
-        background: #333; 
-        padding: 24px; 
-        border-radius: 12px; 
-        max-width: 600px; 
-        margin: 32px auto; 
-    }
-
-    /* Slot Machine Styles */
+    /* --- Form & Scale Styles --- */
+    .form-block { background: #333; padding: 24px; border-radius: 12px; max-width: 500px; margin: 32px auto; }
+    .question { margin-bottom: 18px; }
+    input[type="text"], input[type="number"] { padding: 8px; border-radius: 4px; border: 1px solid #555; background: #444; color: #fff; }
+    .probe-pair { display: flex; gap: 32px; justify-content: center; margin: 18px 0; }
+    .probe-btn { border: 2px solid #888; background: #222; border-radius: 8px; padding: 8px; cursor: pointer; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;}
+    .probe-btn.selected { border: 2px solid #0f0; }
+    .affectiveForm .affective-slider-block { margin: 24px 0; }
+    .affectiveForm .affective-slider-label { display: flex; align-items: center; gap: 12px; }
+    .affectiveForm .affective-slider { flex-grow: 1; }
+    .affectiveForm .affective-slider-caption { text-align: center; margin-top: 8px; font-style: italic; color: #ccc; }
+    .affectiveForm .affective-slider-face { width: 42px; height: 42px; }
+    button { padding: 12px 24px; border-radius: 8px; border: none; background: #0a8; color: #fff; font-weight: bold; cursor: pointer; font-size: 1rem;}
+    
+    /* --- Slot Machine Styles --- */
     .slot-machine-layout { display: flex; flex-direction: row; gap: 32px; align-items: flex-start; }
     .slot-machine { background: #3b1e00; border-radius: 24px; padding: 32px 24px 24px 24px; box-shadow: 0 8px 32px #000a; margin-bottom: 24px; flex: 3; position: relative;}
     .reels { display: flex; justify-content: center; gap: 24px; margin-bottom: 20px; }
     .reel {
       width: 100px; height: 100px; background: #fffbe6;
-      border: 6px solid #bfa145; border-radius: 16px; display: flex; align-items: center; justify-content: center;
-      font-size: 4rem; box-shadow: 0 2px 12px #000a, 0 0 24px #fff70066 inset;
+      border: 6px solid #bfa145; border-radius: 16px;
+      box-shadow: 0 2px 12px #000a, 0 0 24px #fff70066 inset;
     }
     .chips { display: flex; justify-content: center; gap: 18px; margin-bottom: 18px; }
     .chip {
       width: 56px; height: 56px; border-radius: 50%; background: #ffe066;
       border: 4px solid #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; cursor: pointer; transition: border 0.2s, box-shadow 0.2s;
-      box-shadow: 0 2px 10px #000a; margin: 0 2px;
+      box-shadow: 0 2px 10px #000a;
+      margin: 0 2px;
     }
     .chip.selected { border: 4px solid #ff3; box-shadow: 0 0 16px #fff700; }
     .spin-btn {
@@ -58,7 +51,7 @@
       box-shadow: 0 2px 8px #000a, 0 0 16px #fff70055;
       font-weight: bold; letter-spacing: 1px; transition: filter 0.2s;
     }
-    .spin-btn:disabled { background: #888; cursor: not-allowed; filter: grayscale(0.5); }
+    .spin-btn:disabled { background: #888; filter: grayscale(0.5); cursor: not-allowed; }
     .message { font-size: 1.25rem; margin: 14px 0; min-height: 40px;}
     .leaderboard { background: #1a1203; border-radius: 16px; padding: 18px 16px; max-width: 260px; margin: 0; box-shadow: 0 2px 12px #000a; flex: 1;}
     .leaderboard h3 { margin: 0 0 10px 0; color: #ffd700; text-align: center; letter-spacing: 1px; }
@@ -73,229 +66,257 @@
       0% { text-shadow: 0 0 12px #fff700, 0 0 24px #fff70099; }
       100% { text-shadow: 0 0 32px #fff700, 0 0 48px #fff700cc; }
     }
-    
-    /* Scales Form Styles */
-    .question { margin-bottom: 18px; }
-    button { padding: 8px 18px; border-radius: 6px; border: none; background: #0a8; color: #fff; font-weight: bold; cursor: pointer; }
-    .affective-slider-block { margin: 30px 0; }
-    .affective-slider-label { display: flex; align-items: center; gap: 15px; }
-    .affective-slider { width: 100%; }
-    .affective-slider-caption { text-align: center; margin-top: 10px; font-style: italic; color: #ccc; }
-
-    /* Probe Task Styles */
-    .probe-pair { display: flex; gap: 32px; justify-content: center; margin: 18px 0; }
-    .probe-btn {
-        border: 3px solid #666; background: #2c2c2c; border-radius: 8px;
-        padding: 8px; cursor: pointer; width: 80px; height: 80px;
-        transition: border-color 0.2s, background-color 0.2s;
+    @media (max-width: 900px) {
+      .slot-machine-layout { flex-direction: column; }
+      .leaderboard { max-width: 100%; margin-top: 24px;}
     }
-    .probe-btn:hover { border-color: #999; }
   </style>
 </head>
 <body>
+<div class="container">
 
-<!-- PAGE 1: BASELINE RECORDING -->
-<div id="baselinePage" class="page">
-    <div class="center">
-        <div class="fixation-cross">+</div>
-        <div class="baseline-text">Please relax and focus on the cross.</div>
-        <div id="baselineTimer" class="baseline-text"></div>
-    </div>
-</div>
+  <form id="participantForm" class="form-block task-screen">
+    <h2>Participant Information</h2>
+    <div class="question"><label>Participant ID: <input type="text" id="participantId" required></label></div>
+    <div class="question"><label>Session ID: <input type="text" id="sessionId" required></label></div>
+    <div class="question"><label>Group Number: <input type="number" id="groupNumber" required min="1"></label></div>
+    <button type="submit">Start Experiment</button>
+  </form>
 
-<!-- PAGE 2: INSTRUCTIONS -->
-<div id="instructionsPage" class="page">
-    <div class="instructions-container">
-      <h2>Slot Machine Game Instructions</h2>
-      <ul>
-        <li>You will play <b>10 rounds. no shape will appear on the slot .</b>.</li>
-        <li>Press the <b>SPIN</b> button to play each round.</li>
-        <li>Good luck!</li>
-      </ul>
-      <div class="center"><button class="spin-btn" onclick="startGame()">Start Game</button></div>
-    </div>
-</div>
+  <div id="baselineScreen" class="form-block center task-screen hidden">
+    <h2>Baseline Period</h2>
+    <p>Please relax and wait for the task to begin.</p>
+    <p style="font-size: 2rem; color: #ffd700;" id="baselineTimer"></p>
+  </div>
 
-<!-- PAGE 3: SLOT MACHINE -->
-<div id="slotMachinePage" class="page">
-  <div class="container">
-    <div class="slot-machine-layout" id="gameLayout">
-      <div id="game" class="slot-machine">
-        <div class="center">
-          <h2>Slot Machine Game</h2>
-          <div id="trialInfo"></div>
-        </div>
-        <div class="reels-bg"><div class="reels" id="reels"></div></div>
-        <div class="chips" id="chips">
-          <div class="chip" data-value="1">$1</div><div class="chip" data-value="5">$5</div>
-          <div class="chip" data-value="10">$10</div><div class="chip" data-value="20">$20</div>
-        </div>
-        <div class="center message" id="gameMessage"></div>
-        <div class="center" style="margin-top:10px;">
-          <button class="spin-btn" id="spinBtn" onclick="spin()">SPIN</button>
-        </div>
+  <div id="instructions" class="form-block task-screen hidden">
+    <h2>Slot Machine Game Instructions</h2>
+    <ul>
+      <li>You will play <b>10 rounds</b>.</li>
+      <li>In each round, place your bet using the casino chips at the bottom.</li>
+      <li>The slots will remain blank, but you will be notified if you win.</li>
+      <li>Press the <b>SPIN</b> button to play each round.</li>
+      <li>Good luck!</li>
+    </ul>
+    <div class="center"><button class="spin-btn" onclick="startGame()">Start Game</button></div>
+  </div>
+
+  <div id="gameLayout" class="slot-machine-layout task-screen hidden">
+    <div id="game" class="slot-machine">
+      <div class="center">
+        <h2>Slot Machine Game</h2>
+        <div id="trialInfo" style="font-weight: bold; color: #ffd700;"></div>
       </div>
-      <div class="leaderboard" id="leaderboard">
-        <h3>Leaderboard</h3>
-        <ol class="leaderboard-list" id="leaderboardList"></ol>
+      <div class="reels" id="reels">
+          <div class="reel"></div>
+          <div class="reel"></div>
+          <div class="reel"></div>
       </div>
+      <div class="chips" id="chips">
+        <div class="chip" data-value="1">$1</div>
+        <div class="chip" data-value="5">$5</div>
+        <div class="chip" data-value="10">$10</div>
+        <div class="chip" data-value="20">$20</div>
+      </div>
+      <div class="center message" id="gameMessage"></div>
+      <div class="center" style="margin-top:10px;">
+        <button class="spin-btn" id="spinBtn" onclick="spin()">SPIN</button>
+      </div>
+    </div>
+    <div class="leaderboard" id="leaderboard">
+      <h3>Leaderboard</h3>
+      <ol class="leaderboard-list" id="leaderboardList"></ol>
     </div>
   </div>
-</div>
 
-<!-- PAGE 4+: SCALES & FORMS -->
-<div id="scalesPage" class="page">
-    <div class="container">
-        <form id="participantForm" class="form-block">
-            <h2>Participant Information</h2>
-            <div class="question"><label>Participant ID: <input type="text" id="participantId" required></label></div>
-            <div class="question"><label>Session ID: <input type="text" id="sessionId" required></label></div>
-            <div class="question"><label>Group Number: <input type="number" id="groupNumber" required min="1"></label></div>
-            <button type="submit">Continue</button>
-        </form>
+  <form id="affectiveForm" class="affectiveForm form-block task-screen hidden">
+    <h2>Affective Ratings</h2>
+      <div class="affective-instructions">
+        Please rate the following questions using <b>BOTH sliders</b> based on the memory of the slot machine game you just played.
+      </div>
+      <div class="affective-slider-block">
+        <div class="affective-slider-caption">“Rate the level of pleasantness or unpleasantness while playing the game by using the slider below. The scale ranges from extremely unpleasant (represented by the frowning figure on the far left) to extremely pleasant (represented by the smiling figure on the far right). The middle of the scale represents a neutral feeling." </div>
+        </div>
+        <div class="affective-slider-label">
+          <img src="https://img.icons8.com/emoji/48/000000/crying-face.png" class="affective-slider-face" alt="Sad">
+          <input type="range" min="1" max="9" value="5" class="affective-slider" id="valenceSlider">
+          <img src="https://em-content.zobj.net/thumbs/240/apple/354/grinning-face_1f600.png" alt="Happy Emoji" width="42" height="42">
+        </div>
+      </div>
+      <div class="affective-slider-block">
+        <div class="affective-slider-caption">“How intense or calm do you feel while playing the slot machine game by using the slider below. The scale ranges from  a very low level of arousal (feeling completely calm, relaxed, or sleepy) to very high level of arousal (feeling excited, agitated, frenzied, or wide awake). ”</div>
+        </div>
+        <div class="affective-slider-label">
+          <img src="https://img.icons8.com/emoji/48/000000/sleeping-face.png" class="affective-slider-face" alt="Low arousal">
+          <input type="range" min="1" max="9" value="5" class="affective-slider" id="arousalSlider">
+          <img src="https://img.icons8.com/emoji/48/000000/astonished-face.png" class="affective-slider-face" alt="High arousal">
+        </div>
+      </div>
+      <button class="submit-btn" type="submit">Continue</button>
+  </form>
 
-        <form id="affectiveForm" class="form-block" style="display:none;">
-            <h2>Affective Ratings</h2>
-            <div>Please rate the following questions using <b>BOTH sliders</b>.</div>
-            <div class="affective-slider-block">
-                <div class="affective-slider-caption">“Rate the level of pleasantness or unpleasantness while playing the game by using the slider below. The scale ranges from extremely unpleasant (represented by the frowning figure on the far left) to extremely pleasant (represented by the smiling figure on the far right). The middle of the scale represents a neutral feeling." </div>
-        </div>
-                <div class="affective-slider-label">
-                    <img src="https://img.icons8.com/emoji/48/000000/crying-face.png" alt="Sad">
-                    <input type="range" min="1" max="9" value="5" class="affective-slider" id="valenceSlider">
-                    <img src="https://em-content.zobj.net/thumbs/240/apple/354/grinning-face_1f600.png" alt="Happy" width="42" height="42">
-                </div>
-            </div>
-            <div class="affective-slider-block">
-                <div class="affective-slider-caption">“How intense or calm do you feel while playing the slot machine game by using the slider below. The scale ranges from  a very low level of arousal (feeling completely calm, relaxed, or sleepy) to very high level of arousal (feeling excited, agitated, frenzied, or wide awake). ”</div>
-        </div>
-                <div class="affective-slider-label">
-                    <img src="https://img.icons8.com/emoji/48/000000/sleeping-face.png" alt="Low arousal">
-                    <input type="range" min="1" max="9" value="5" class="affective-slider" id="arousalSlider">
-                    <img src="https://img.icons8.com/emoji/48/000000/astonished-face.png" alt="High arousal">
-                </div>
-            </div>
-            <button type="submit">Continue</button>
-        </form>
-
-        <div id="probeTask" class="form-block" style="display:none;">
-          <h2>Choice Task</h2>
-          <div id="probePairs"></div>
-          <div class="center">
-              <button id="finishBtn" onclick="finishExperiment()" style="display:none;">Finish Experiment</button>
-          </div>
-        </div>
-
-        <div id="thankYou" class="form-block" style="display:none;">
-            <h2>Thank you for participating!</h2>
-            <div>Your responses have been recorded.</div>
-        </div>
+  <div id="probeTask" class="form-block task-screen hidden">
+    <h2>Choice Task</h2>
+    <div id="probePairs"></div>
+    <div class="center" style="margin-top: 20px;">
+        <button id="finishBtn" onclick="finishExperiment()" disabled>Finish</button>
     </div>
+  </div>
+
+  <div id="thankYou" class="form-block center task-screen hidden">
+    <h2>Thank you for participating!</h2>
+    <p>Your responses have been recorded and the data file has been downloaded.</p>
+  </div>
+
 </div>
-
 <script>
-// --- GLOBAL DATA OBJECT ---
-let participant = {
-  participantId: '', sessionId: '', groupNumber: '',
-  affective: {}, probe: [], timestamps: {}
-};
+// --- CONFIGURATION ---
+const TOTAL_TRIALS = 10;
+const BASELINE_DURATION_SECONDS = 120; // 2 minutes
 
-// --- STIMULUS DEFINITIONS ---
+// --- SYMBOL DEFINITIONS (for probe task) ---
 const shapeSVGs = {
-  'sphere': `<svg width="60" height="60" viewBox="0 0 80 80"><defs><radialGradient id="g1" cx="50%" cy="40%" r="50%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#a3f"/></radialGradient></defs><ellipse cx="40" cy="40" rx="32" ry="32" fill="url(#g1)" stroke="#5c2a7c" stroke-width="4"/></svg>`,
-  'cube': `<svg width="60" height="60" viewBox="0 0 80 80"><defs><linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#3a6"/></linearGradient></defs><rect x="16" y="16" width="48" height="48" rx="8" fill="url(#g2)" stroke="#2a7c5c" stroke-width="4"/></svg>`,
-  'pyramid': `<svg width="60" height="60" viewBox="0 0 80 80"><defs><linearGradient id="g3" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#a3f"/></linearGradient></defs><polygon points="40,12 68,68 12,68" fill="url(#g3)" stroke="#5c2a7c" stroke-width="4"/></svg>`,
-  'cylinder': `<svg width="60" height="60" viewBox="0 0 80 80"><defs><linearGradient id="g4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#3a6"/></linearGradient></defs><ellipse cx="40" cy="20" rx="24" ry="10" fill="#fff" opacity="0.5"/><rect x="16" y="20" width="48" height="40" rx="24" fill="url(#g4)" stroke="#2a7c5c" stroke-width="4"/><ellipse cx="40" cy="60" rx="24" ry="10" fill="#3a6" stroke="#2a7c5c" stroke-width="4"/></svg>`
+  'sphere': `<svg width="50" height="50" viewBox="0 0 80 80"><defs><radialGradient id="g1" cx="50%" cy="40%" r="50%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#a3f"/></radialGradient></defs><ellipse cx="40" cy="40" rx="32" ry="32" fill="url(#g1)" stroke="#5c2a7c" stroke-width="4"/></svg>`,
+  'cube': `<svg width="50" height="50" viewBox="0 0 80 80"><defs><linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#3a6"/></linearGradient></defs><rect x="16" y="16" width="48" height="48" rx="8" fill="url(#g2)" stroke="#2a7c5c" stroke-width="4"/></svg>`,
+  'pyramid': `<svg width="50" height="50" viewBox="0 0 80 80"><defs><linearGradient id="g3" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#a3f"/></linearGradient></defs><polygon points="40,12 68,68 12,68" fill="url(#g3)" stroke="#5c2a7c" stroke-width="4"/></svg>`,
+  'cylinder': `<svg width="50" height="50" viewBox="0 0 80 80"><defs><linearGradient id="g4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#3a6"/></linearGradient></defs><ellipse cx="40" cy="20" rx="24" ry="10" fill="#fff" opacity="0.5"/><rect x="16" y="20" width="48" height="40" rx="24" fill="url(#g4)" stroke="#2a7c5c" stroke-width="4"/><ellipse cx="40" cy="60" rx="24" ry="10" fill="#3a6" stroke="#2a7c5c" stroke-width="4"/></svg>`
 };
-const probeSymbolsA = ['sphere', 'pyramid'];
-const probeSymbolsB = ['cube', 'cylinder'];
-const winSound = new Audio("https://orangefreesounds.com/wp-content/uploads/2022/6/Casino-winner-sound-effect.mp3");
+const rewardSymbols = ['sphere', 'pyramid'];
+const nogainSymbols = ['cube', 'cylinder'];
 
-// --- CORE LOGIC: Page/Task Management ---
-const allPages = document.querySelectorAll('.page');
 
-function showPage(pageId) {
-    allPages.forEach(page => {
-        page.style.display = 'none'; // Hide all pages
+// --- DATA & STATE VARIABLES ---
+let trialNum = 0;
+let betAmount = 1;
+let leaderboard = [];
+
+let participantData = {
+    participantId: '',
+    sessionId: '',
+    groupNumber: '',
+    timestamps: {
+        experiment_startTime: null,
+        baseline_startTime: null,
+        baseline_endTime: null,
+        instructions_startTime: null,
+        instructions_endTime: null,
+        slotMachine_startTime: null,
+        slotMachine_endTime: null,
+        affective_startTime: null,
+        affective_endTime: null,
+        probe_startTime: null,
+        probe_endTime: null,
+        experiment_endTime: null,
+    },
+    affective: {
+        valence: null,
+        arousal: null,
+        reactionTime: null
+    },
+    probe: [] // {pair: [a,b], choice: 'a', isReward: 1, reactionTime: 1234}
+};
+
+
+// --- VIEW MANAGEMENT ---
+/**
+ * Hides all task screens and shows only the one with the specified ID.
+ * @param {string} viewId The ID of the task screen to show.
+ */
+function showView(viewId) {
+    // Hide all views that have the 'task-screen' class
+    document.querySelectorAll('.task-screen').forEach(screen => {
+        screen.classList.add('hidden');
     });
-    const pageToShow = document.getElementById(pageId);
-    if (pageToShow) {
-        pageToShow.style.display = 'flex'; // Show the correct page
+
+    // Show the target view
+    const targetView = document.getElementById(viewId);
+    if (targetView) {
+        targetView.classList.remove('hidden');
     }
 }
 
-// --- TASK 1: Baseline Recording ---
+
+// --- EXPERIMENT FLOW FUNCTIONS ---
+
+// 1. Start: Participant Info
+document.getElementById('participantForm').onsubmit = function(e) {
+  e.preventDefault();
+  participantData.participantId = document.getElementById('participantId').value.trim();
+  participantData.sessionId = document.getElementById('sessionId').value.trim();
+  participantData.groupNumber = document.getElementById('groupNumber').value;
+  
+  participantData.timestamps.experiment_startTime = Date.now();
+  
+  startBaseline();
+};
+
+// 2. Baseline Period
 function startBaseline() {
-    const now = Date.now();
-    participant.timestamps.baseline_start = now;
-    participant.timestamps.experiment_start = now;
-    console.log("Baseline & Experiment Start Timestamp:", now);
+    showView('baselineScreen');
+    participantData.timestamps.baseline_startTime = Date.now();
+    const timerDisplay = document.getElementById('baselineTimer');
 
-    showPage('baselinePage');
+    let timeLeft = BASELINE_DURATION_SECONDS;
+    timerDisplay.textContent = `${Math.floor(timeLeft / 60)}:${(timeLeft % 60).toString().padStart(2, '0')}`;
 
-    let timeLeft = 120;
-    const timerElement = document.getElementById('baselineTimer');
-    timerElement.textContent = `Time remaining: 2:00`;
-
-    const countdownInterval = setInterval(() => {
+    const countdown = setInterval(() => {
         timeLeft--;
-        const minutes = Math.floor(timeLeft / 60);
-        const seconds = timeLeft % 60;
-        const formattedSeconds = seconds < 10 ? '0' + seconds : seconds;
-        timerElement.textContent = `Time remaining: ${minutes}:${formattedSeconds}`;
-
+        timerDisplay.textContent = `${Math.floor(timeLeft / 60)}:${(timeLeft % 60).toString().padStart(2, '0')}`;
         if (timeLeft <= 0) {
-            clearInterval(countdownInterval);
-            participant.timestamps.baseline_end = Date.now();
-            console.log("Baseline End Timestamp:", participant.timestamps.baseline_end);
-            showPage('instructionsPage');
+            clearInterval(countdown);
+            participantData.timestamps.baseline_endTime = Date.now();
+            showInstructions();
         }
     }, 1000);
 }
 
-// --- TASK 2 & 3: Instructions & Slot Machine ---
-let trialNum = 0;
-let leaderboard = [];
-const TOTAL_TRIALS = 10;
+// 3. Instructions
+function showInstructions() {
+    showView('instructions');
+    participantData.timestamps.instructions_startTime = Date.now();
+}
 
+
+// 4. Slot Machine Game
 function startGame() {
-  participant.timestamps.slotMachine_start = Date.now();
-  console.log("Slot Machine Start Timestamp:", participant.timestamps.slotMachine_start);
-  showPage('slotMachinePage');
+  showView('gameLayout');
+  participantData.timestamps.instructions_endTime = Date.now();
+  participantData.timestamps.slotMachine_startTime = Date.now();
 
   trialNum = 0;
   leaderboard = [{name: "You", score: 100}];
-  for (let i = 1; i <= 10; i++) leaderboard.push({name: "Player " + i, score: 100 - i});
+  for (let i = 1; i <= 10; i++) {
+    leaderboard.push({name: "Player " + (i + 1), score: 100 - i});
+  }
   
-  document.querySelectorAll('.chip').forEach(chip => {
-    chip.onclick = () => {
-      document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
-      chip.classList.add('selected');
-    }
-  });
   updateGameUI();
   renderLeaderboard();
+
+  // Bet chip selection logic
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.onclick = function() {
+      document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+      chip.classList.add('selected');
+      betAmount = parseInt(chip.dataset.value);
+    }
+  });
 }
 
 function updateGameUI() {
-  document.getElementById('trialInfo').innerHTML = `<b>Trial ${trialNum + 1} of ${TOTAL_TRIALS}</b>`;
-  const reelsDiv = document.getElementById('reels');
-  reelsDiv.innerHTML = '';
-  for (let i = 0; i < 3; i++) {
-    const div = document.createElement('div');
-    div.className = 'reel';
-    reelsDiv.appendChild(div);
-  }
-  document.getElementById('gameMessage').innerHTML = '';
+  document.getElementById('trialInfo').innerHTML = `Trial ${trialNum + 1} of ${TOTAL_TRIALS}`;
+  document.getElementById('gameMessage').innerHTML = 'Place your bet and spin!';
   document.getElementById('spinBtn').disabled = false;
-  document.querySelectorAll('.chip').forEach(chip => chip.classList.remove('selected'));
+  
+  // Default to $1 bet
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
   document.querySelector('.chip[data-value="1"]').classList.add('selected');
+  betAmount = 1;
 }
 
 function renderLeaderboard() {
   const list = document.getElementById('leaderboardList');
   list.innerHTML = '';
-  leaderboard.forEach((l,i) => {
+  leaderboard.forEach((l, i) => {
     const li = document.createElement('li');
     li.innerText = `${l.name} - $${l.score}`;
     if (i === 0) li.className = 'player';
@@ -305,83 +326,92 @@ function renderLeaderboard() {
 
 function spin() {
   document.getElementById('spinBtn').disabled = true;
-  document.getElementById('gameMessage').innerHTML = '';
+  document.getElementById('gameMessage').innerHTML = 'Spinning...';
+
+  const reelsDiv = document.getElementById('reels');
+  const reels = reelsDiv.querySelectorAll('.reel');
+  let flashCount = 0;
+  const anim = setInterval(() => {
+      reels.forEach(reel => {
+          reel.style.backgroundColor = flashCount % 2 === 0 ? '#fffbe6' : '#ffd700';
+      });
+      flashCount++;
+  }, 100);
+
   setTimeout(() => {
-    winSound.play().catch(e => console.error("Audio play failed:", e));
-    setTimeout(() => { winSound.pause(); winSound.currentTime = 0; }, 2000);
+    clearInterval(anim);
+    reels.forEach(reel => {
+        reel.style.backgroundColor = '#fffbe6'; // Reset color
+    });
 
-    document.getElementById('gameMessage').innerHTML = `<span class="sparkle-text">Congratulations , You Win!</span>`;
+    document.getElementById('gameMessage').innerHTML = `<span class="sparkle-text">Congratulations, You Win!</span>`;
+    
     trialNum++;
-    const nextTrialDelay = 2200; 
-    if (trialNum < TOTAL_TRIALS) setTimeout(updateGameUI, nextTrialDelay);
-    else setTimeout(endGame, nextTrialDelay);
-  }, 1000);
+    if (trialNum < TOTAL_TRIALS) {
+      setTimeout(() => {
+        updateGameUI();
+      }, 1500);
+    } else {
+      setTimeout(() => {
+        participantData.timestamps.slotMachine_endTime = Date.now();
+        showAffectiveRating();
+      }, 1500);
+    }
+  }, 1200);
 }
 
-function endGame() {
-  participant.timestamps.slotMachine_end = Date.now();
-  participant.timestamps.participantInfo_start = participant.timestamps.slotMachine_end;
-  console.log("Slot Machine End & Participant Info Start:", participant.timestamps.slotMachine_end);
-  showPage('scalesPage');
+
+// 5. Affective Rating
+function showAffectiveRating() {
+    showView('affectiveForm');
+    participantData.timestamps.affective_startTime = Date.now();
 }
 
-// --- TASK 4, 5, 6: Scales, Probe Task, & Finish ---
-document.getElementById('participantForm').onsubmit = (e) => {
+document.getElementById('affectiveForm').onsubmit = function(e) {
   e.preventDefault();
-  participant.timestamps.participantInfo_end = Date.now();
-  participant.timestamps.affectiveRating_start = participant.timestamps.participantInfo_end;
-  console.log("Participant Info End & Affective Rating Start:", participant.timestamps.participantInfo_end);
+  const startTime = participantData.timestamps.affective_startTime;
+  const endTime = Date.now();
 
-  participant.participantId = document.getElementById('participantId').value.trim();
-  participant.sessionId = document.getElementById('sessionId').value.trim();
-  participant.groupNumber = document.getElementById('groupNumber').value;
-  
-  document.getElementById('participantForm').style.display = 'none';
-  document.getElementById('affectiveForm').style.display = 'block';
-};
+  participantData.affective.valence = Number(document.getElementById('valenceSlider').value);
+  participantData.affective.arousal = Number(document.getElementById('arousalSlider').value);
+  participantData.affective.reactionTime = endTime - startTime;
+  participantData.timestamps.affective_endTime = endTime;
 
-document.getElementById('affectiveForm').onsubmit = (e) => {
-  e.preventDefault();
-  participant.timestamps.affectiveRating_end = Date.now();
-  participant.timestamps.probeTask_start = participant.timestamps.affectiveRating_end;
-  console.log("Affective Rating End & Probe Task Start:", participant.timestamps.affectiveRating_end);
-
-  participant.affective.valence = Number(document.getElementById('valenceSlider').value);
-  participant.affective.arousal = Number(document.getElementById('arousalSlider').value);
-  participant.affective.reactionTime = participant.timestamps.affectiveRating_end - participant.timestamps.affectiveRating_start;
-  
-  document.getElementById('affectiveForm').style.display = 'none';
   showProbeTask();
 };
 
-let probePairs = [];
-let currentProbeIndex = 0;
-
+// 6. Binary Probe Task
 function showProbeTask() {
-  document.getElementById('probeTask').style.display = 'block';
-  probePairs = [];
-  probeSymbolsA.forEach(symA => {
-    probeSymbolsB.forEach(symB => probePairs.push([symA, symB]));
-  });
-  probePairs.sort(() => Math.random() - 0.5);
-  currentProbeIndex = 0;
-  renderNextProbe();
-}
+  showView('probeTask');
+  participantData.timestamps.probe_startTime = Date.now();
 
-function renderNextProbe() {
-    const probeDiv = document.getElementById('probePairs');
+  const pairs = [];
+  rewardSymbols.forEach(win => {
+    nogainSymbols.forEach(nogain => {
+      pairs.push([win, nogain]);
+    });
+  });
+
+  let probeIndex = 0;
+  const probeDiv = document.getElementById('probePairs');
+
+  function renderProbe() {
     probeDiv.innerHTML = '';
-    if (currentProbeIndex >= probePairs.length) {
-        document.getElementById('finishBtn').style.display = 'inline-block';
-        return;
+    if (probeIndex >= pairs.length) {
+      document.getElementById('finishBtn').disabled = false;
+      probeDiv.innerHTML = '<p>Task complete. Please click Finish.</p>';
+      return;
     }
-    let [a, b] = probePairs[currentProbeIndex];
-    if (Math.random() > 0.5) [a, b] = [b, a];
+
+    let [a, b] = pairs[probeIndex];
+    if (Math.random() > 0.5) [a, b] = [b, a]; // Randomize left/right position
+
     const question = document.createElement('div');
     question.style.fontWeight = 'bold';
     question.style.marginBottom = '12px';
     question.innerText = "Which of these two is more pleasant?";
     probeDiv.appendChild(question);
+
     const pairDiv = document.createElement('div');
     pairDiv.className = 'probe-pair';
     const btnA = document.createElement('button');
@@ -390,46 +420,55 @@ function renderNextProbe() {
     const btnB = document.createElement('button');
     btnB.className = 'probe-btn';
     btnB.innerHTML = shapeSVGs[b];
+    
     let probeStart = Date.now();
-    btnA.onclick = (e) => { e.preventDefault(); recordProbe(a, b, a, probeStart); };
-    btnB.onclick = (e) => { e.preventDefault(); recordProbe(a, b, b, probeStart); };
+    btnA.onclick = (e) => { e.preventDefault(); recordProbe(a,b,a,probeStart); };
+    btnB.onclick = (e) => { e.preventDefault(); recordProbe(a,b,b,probeStart); };
+
     pairDiv.appendChild(btnA);
     pairDiv.appendChild(btnB);
     probeDiv.appendChild(pairDiv);
-}
+  }
 
-function recordProbe(itemA, itemB, choice, probeStartTime) {
-    participant.probe.push({
-      pair: [itemA, itemB], choice: choice,
-      isChoiceA: probeSymbolsA.includes(choice),
-      reactionTime: Date.now() - probeStartTime
+  function recordProbe(itemA, itemB, choice, probeStart) {
+    let isReward = rewardSymbols.includes(choice) ? 1 : 0;
+    participantData.probe.push({
+      pair: [itemA, itemB],
+      choice: choice,
+      isReward: isReward,
+      reactionTime: Date.now() - probeStart
     });
-    currentProbeIndex++;
-    renderNextProbe();
+    probeIndex++;
+    renderProbe();
+  }
+  renderProbe();
 }
 
+// 7. Finish Experiment and Download Data
 function finishExperiment() {
-  participant.timestamps.probeTask_end = Date.now();
-  participant.timestamps.experiment_end = participant.timestamps.probeTask_end;
-  console.log("Probe Task End & Experiment End:", participant.timestamps.probeTask_end);
+  participantData.timestamps.probe_endTime = Date.now();
+  participantData.timestamps.experiment_endTime = Date.now();
+
+  showView('thankYou');
   
-  document.getElementById('probeTask').style.display = 'none';
-  document.getElementById('thankYou').style.display = 'block';
-  
-  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(participant, null, 2));
+  // Download data
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(participantData, null, 2));
   const dlAnchor = document.createElement('a');
+  const fileName = `participant_${participantData.participantId}_session_${participantData.sessionId}_data.json`;
   dlAnchor.setAttribute("href", dataStr);
-  dlAnchor.setAttribute("download", `P${participant.participantId}_S${participant.sessionId}_G${participant.groupNumber}_data.json`);
+  dlAnchor.setAttribute("download", fileName);
   document.body.appendChild(dlAnchor);
   dlAnchor.click();
   dlAnchor.remove();
-  console.log('Final Participant Data:', participant);
+
+  console.log('Final Participant Data:', participantData);
 }
 
-// --- INITIALIZE EXPERIMENT ---
+// Set the initial view when the page loads
 window.onload = function() {
-    startBaseline();
+    showView('participantForm');
 };
+
 </script>
 </body>
 </html>
