@@ -5,7 +5,7 @@
   <title>Psychology Experiment</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    /* --- NEW LAYOUT: More robust positioning to prevent overlap --- */
+    /* --- LAYOUT: Centering content to prevent overlap --- */
     body {
         font-family: 'Segoe UI', Arial, sans-serif;
         background: #2d1a09;
@@ -23,10 +23,10 @@
     }
 
     .task-screen {
-      /* This class is now only for JS selection, no layout needed */
+      /* This class is used by JavaScript to switch between views. */
     }
 
-    /* --- End of New Layout --- */
+    /* --- End of Layout --- */
 
     .center { text-align: center; }
     
@@ -271,6 +271,8 @@ let participantData = {
 // --- VIEW MANAGEMENT ---
 /**
  * Hides all task screens and shows only the one with the specified ID.
+ * This version uses requestAnimationFrame to prevent potential rendering glitches
+ * where two screens might briefly appear in the layout at the same time, causing overlap.
  * @param {string} viewId The ID of the task screen to show.
  */
 function showView(viewId) {
@@ -279,11 +281,14 @@ function showView(viewId) {
         screen.classList.add('hidden');
     });
 
-    // Show the target view
-    const targetView = document.getElementById(viewId);
-    if (targetView) {
-        targetView.classList.remove('hidden');
-    }
+    // Use requestAnimationFrame to ensure the 'hide' operations have been
+    // processed by the browser before we show the new screen. This prevents overlap.
+    requestAnimationFrame(() => {
+        const targetView = document.getElementById(viewId);
+        if (targetView) {
+            targetView.classList.remove('hidden');
+        }
+    });
 }
 
 // --- AUDIO ---
@@ -566,4 +571,3 @@ window.onload = function() {
 </script>
 </body>
 </html>
-
