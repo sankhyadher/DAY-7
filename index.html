@@ -14,28 +14,18 @@
     }
 
     .container {
-        padding: 24px;
-        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         min-height: 100vh;
+        padding: 24px;
         box-sizing: border-box;
     }
 
     .task-screen {
-        position: fixed; /* Position relative to viewport */
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 90%;
-        box-sizing: border-box;
+      /* This class is now only for JS selection, no layout needed */
     }
 
-    .form-block.task-screen {
-        max-width: 500px; /* Constrain width of forms */
-    }
-
-    #gameLayout.task-screen {
-        max-width: 900px; /* Allow game layout to be wider */
-    }
     /* --- End of New Layout --- */
 
     .center { text-align: center; }
@@ -57,7 +47,8 @@
         background: #333;
         padding: 24px;
         border-radius: 12px;
-        margin: 0 auto; /* Center within the task-screen dimensions */
+        width: 100%;
+        max-width: 500px;
     }
     .question { margin-bottom: 18px; }
     input[type="text"], input[type="number"] { padding: 8px; border-radius: 4px; border: 1px solid #555; background: #444; color: #fff; width: 95%; }
@@ -75,7 +66,14 @@
     button:hover { background: #0b9; }
     
     /* --- Slot Machine Styles --- */
-    .slot-machine-layout { display: flex; flex-direction: row; gap: 32px; align-items: flex-start; }
+    .slot-machine-layout { 
+      display: flex; 
+      flex-direction: row; 
+      gap: 32px; 
+      align-items: flex-start;
+      width: 100%;
+      max-width: 900px;
+    }
     .slot-machine { background: #3b1e00; border-radius: 24px; padding: 32px 24px 24px 24px; box-shadow: 0 8px 32px #000a; margin-bottom: 24px; flex: 3; position: relative;}
     .reels { display: flex; justify-content: center; gap: 24px; margin-bottom: 20px; }
     .reel {
@@ -146,6 +144,7 @@
       <li>You will play <b>10 rounds</b>.</li>
       <li>In each round, place your bet using the casino chips at the bottom.</li>
       <li>The slots will remain blank, but you will be notified if you win.</li>
+      <li>Your score does not change, but please try to enjoy the experience!</li>
       <li>Press the <b>SPIN</b> button to play each round.</li>
       <li>Good luck!</li>
     </ul>
@@ -186,8 +185,7 @@
         Please rate the following questions using <b>BOTH sliders</b> based on the memory of the slot machine game you just played.
       </div>
       <div class="affective-slider-block">
-        <div class="affective-slider-caption">“Rate the level of pleasantness or unpleasantness while playing the game by using the slider below. The scale ranges from extremely unpleasant (represented by the frowning figure on the far left) to extremely pleasant (represented by the smiling figure on the far right). The middle of the scale represents a neutral feeling." </div>
-        </div>
+        <div class="affective-slider-caption">“How pleasant or unpleasant does the memory of the slot machine game feel to you right now?”</div>
         <div class="affective-slider-label">
           <img src="https://img.icons8.com/emoji/48/000000/crying-face.png" class="affective-slider-face" alt="Sad">
           <input type="range" min="1" max="9" value="5" class="affective-slider" id="valenceSlider">
@@ -196,8 +194,7 @@
         </div>
       </div>
       <div class="affective-slider-block">
-        <div class="affective-slider-caption">“How intense or calm do you feel while playing the slot machine game by using the slider below. The scale ranges from  a very low level of arousal (feeling completely calm, relaxed, or sleepy) to very high level of arousal (feeling excited, agitated, frenzied, or wide awake). ”</div>
-        </div>
+        <div class="affective-slider-caption">“How emotionally activated or calm do you feel while recalling the memory of the slot machine game?”</div>
         <div class="affective-slider-label">
           <img src="https://img.icons8.com/emoji/48/000000/sleeping-face.png" class="affective-slider-face" alt="Low arousal">
           <input type="range" min="1" max="9" value="5" class="affective-slider" id="arousalSlider">
@@ -486,7 +483,7 @@ function showProbeTask() {
     const question = document.createElement('div');
     question.style.fontWeight = 'bold';
     question.style.marginBottom = '12px';
-    question.innerText = "Which is more pleasant out of these two?";
+    question.innerText = "Which shape do you prefer?";
     probeDiv.appendChild(question);
 
     const pairDiv = document.createElement('div');
