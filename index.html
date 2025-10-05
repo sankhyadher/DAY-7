@@ -6,30 +6,35 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     /* General Styles */
-    body { font-family: 'Segoe UI', Arial, sans-serif; background: #222; color: #eee; margin: 0; }
-    .container { max-width: 700px; margin: 0 auto; padding: 24px; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #222; color: #eee; margin: 0; overflow: hidden; }
     .center { text-align: center; }
 
-    /* Baseline Screen Styles */
-    .fullscreen-task {
-        display: flex; /* Initially a flex container */
-        position: fixed;
+    /* --- FIX: Page containers for strict separation --- */
+    .page {
+        position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        flex-direction: column;
+        display: none; /* All pages are hidden by default */
         justify-content: center;
         align-items: center;
-        background-color: #222;
-        z-index: 9999;
+        overflow-y: auto; /* Allow scrolling if content is long */
     }
+
     .fixation-cross { font-size: 5rem; font-weight: bold; }
     .baseline-text { font-size: 1.2rem; margin-top: 20px; }
     #baselineTimer { color: #ffd700; font-weight: bold; margin-top: 20px; }
 
-    /* Instructions Styles */
-    .instructions-container { background: #333; padding: 24px; border-radius: 12px; max-width: 600px; margin: 32px auto; }
+    /* Component Styles (Instructions, Forms, etc.) */
+    .container { max-width: 700px; padding: 24px; }
+    .instructions-container, .form-block { 
+        background: #333; 
+        padding: 24px; 
+        border-radius: 12px; 
+        max-width: 600px; 
+        margin: 32px auto; 
+    }
 
     /* Slot Machine Styles */
     .slot-machine-layout { display: flex; flex-direction: row; gap: 32px; align-items: flex-start; }
@@ -44,8 +49,7 @@
     .chip {
       width: 56px; height: 56px; border-radius: 50%; background: #ffe066;
       border: 4px solid #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; cursor: pointer; transition: border 0.2s, box-shadow 0.2s;
-      box-shadow: 0 2px 10px #000a;
-      margin: 0 2px;
+      box-shadow: 0 2px 10px #000a; margin: 0 2px;
     }
     .chip.selected { border: 4px solid #ff3; box-shadow: 0 0 16px #fff700; }
     .spin-btn {
@@ -71,11 +75,8 @@
     }
     
     /* Scales Form Styles */
-    .form-block { background: #333; padding: 24px; border-radius: 12px; max-width: 600px; margin: 32px auto; }
     .question { margin-bottom: 18px; }
     button { padding: 8px 18px; border-radius: 6px; border: none; background: #0a8; color: #fff; font-weight: bold; cursor: pointer; }
-
-    /* Affective Scale Specific Styles */
     .affective-slider-block { margin: 30px 0; }
     .affective-slider-label { display: flex; align-items: center; gap: 15px; }
     .affective-slider { width: 100%; }
@@ -93,18 +94,21 @@
 </head>
 <body>
 
-<div id="baselinePart" class="fullscreen-task">
-    <div class="fixation-cross">+</div>
-    <div class="baseline-text">Please relax and focus on the cross.</div>
-    <div id="baselineTimer" class="baseline-text"></div>
+<!-- PAGE 1: BASELINE RECORDING -->
+<div id="baselinePage" class="page">
+    <div class="center">
+        <div class="fixation-cross">+</div>
+        <div class="baseline-text">Please relax and focus on the cross.</div>
+        <div id="baselineTimer" class="baseline-text"></div>
+    </div>
 </div>
 
-<div id="instructionsPart">
+<!-- PAGE 2: INSTRUCTIONS -->
+<div id="instructionsPage" class="page">
     <div class="instructions-container">
       <h2>Slot Machine Game Instructions</h2>
       <ul>
-        <li>You will play <b>10 rounds</b>.</li>
-        <li>There will be no shape in the slot.</b>.</li>
+        <li>You will play <b>10 rounds. no shape will appear on the slot .</b>.</li>
         <li>Press the <b>SPIN</b> button to play each round.</li>
         <li>Good luck!</li>
       </ul>
@@ -112,7 +116,8 @@
     </div>
 </div>
 
-<div id="slotMachinePart">
+<!-- PAGE 3: SLOT MACHINE -->
+<div id="slotMachinePage" class="page">
   <div class="container">
     <div class="slot-machine-layout" id="gameLayout">
       <div id="game" class="slot-machine">
@@ -138,65 +143,64 @@
   </div>
 </div>
 
-<div id="scalesPart">
-    <form id="participantForm" class="form-block">
-        <h2>Participant Information</h2>
-        <div class="question"><label>Participant ID: <input type="text" id="participantId" required></label></div>
-        <div class="question"><label>Session ID: <input type="text" id="sessionId" required></label></div>
-        <div class="question"><label>Group Number: <input type="number" id="groupNumber" required min="1"></label></div>
-        <button type="submit">Continue</button>
-    </form>
+<!-- PAGE 4+: SCALES & FORMS -->
+<div id="scalesPage" class="page">
+    <div class="container">
+        <form id="participantForm" class="form-block">
+            <h2>Participant Information</h2>
+            <div class="question"><label>Participant ID: <input type="text" id="participantId" required></label></div>
+            <div class="question"><label>Session ID: <input type="text" id="sessionId" required></label></div>
+            <div class="question"><label>Group Number: <input type="number" id="groupNumber" required min="1"></label></div>
+            <button type="submit">Continue</button>
+        </form>
 
-    <form id="affectiveForm" class="form-block">
-        <h2>Affective Ratings</h2>
-        <div>Please rate the following questions using <b>BOTH sliders</b>.</div>
-        <div class="affective-slider-block">
-            <div class="affective-slider-caption">“Rate the level of pleasantness or unpleasantness while playing the game by using the slider below. The scale ranges from extremely unpleasant (represented by the frowning figure on the far left) to extremely pleasant (represented by the smiling figure on the far right). The middle of the scale represents a neutral feeling." </div>
+        <form id="affectiveForm" class="form-block" style="display:none;">
+            <h2>Affective Ratings</h2>
+            <div>Please rate the following questions using <b>BOTH sliders</b>.</div>
+            <div class="affective-slider-block">
+                <div class="affective-slider-caption">“Rate the level of pleasantness or unpleasantness while playing the game by using the slider below. The scale ranges from extremely unpleasant (represented by the frowning figure on the far left) to extremely pleasant (represented by the smiling figure on the far right). The middle of the scale represents a neutral feeling." </div>
         </div>
-            <div class="affective-slider-label">
-                <img src="https://img.icons8.com/emoji/48/000000/crying-face.png" alt="Sad">
-                <input type="range" min="1" max="9" value="5" class="affective-slider" id="valenceSlider">
-                <img src="https://em-content.zobj.net/thumbs/240/apple/354/grinning-face_1f600.png" alt="Happy" width="42" height="42">
+                <div class="affective-slider-label">
+                    <img src="https://img.icons8.com/emoji/48/000000/crying-face.png" alt="Sad">
+                    <input type="range" min="1" max="9" value="5" class="affective-slider" id="valenceSlider">
+                    <img src="https://em-content.zobj.net/thumbs/240/apple/354/grinning-face_1f600.png" alt="Happy" width="42" height="42">
+                </div>
             </div>
+            <div class="affective-slider-block">
+                <div class="affective-slider-caption">“How intense or calm do you feel while playing the slot machine game by using the slider below. The scale ranges from  a very low level of arousal (feeling completely calm, relaxed, or sleepy) to very high level of arousal (feeling excited, agitated, frenzied, or wide awake). ”</div>
         </div>
-        <div class="affective-slider-block">
-            <div class="affective-slider-caption">“How intense or calm do you feel while playing the slot machine game by using the slider below. The scale ranges from  a very low level of arousal (feeling completely calm, relaxed, or sleepy) to very high level of arousal (feeling excited, agitated, frenzied, or wide awake). ”</div>
-        </div>
-            <div class="affective-slider-label">
-                <img src="https://img.icons8.com/emoji/48/000000/sleeping-face.png" alt="Low arousal">
-                <input type="range" min="1" max="9" value="5" class="affective-slider" id="arousalSlider">
-                <img src="https://img.icons8.com/emoji/48/000000/astonished-face.png" alt="High arousal">
+                <div class="affective-slider-label">
+                    <img src="https://img.icons8.com/emoji/48/000000/sleeping-face.png" alt="Low arousal">
+                    <input type="range" min="1" max="9" value="5" class="affective-slider" id="arousalSlider">
+                    <img src="https://img.icons8.com/emoji/48/000000/astonished-face.png" alt="High arousal">
+                </div>
             </div>
+            <button type="submit">Continue</button>
+        </form>
+
+        <div id="probeTask" class="form-block" style="display:none;">
+          <h2>Choice Task</h2>
+          <div id="probePairs"></div>
+          <div class="center">
+              <button id="finishBtn" onclick="finishExperiment()" style="display:none;">Finish Experiment</button>
+          </div>
         </div>
-        <button type="submit">Continue</button>
-    </form>
 
-    <div id="probeTask" class="form-block">
-      <h2>Choice Task</h2>
-      <div id="probePairs"></div>
-      <div class="center">
-          <button id="finishBtn" onclick="finishExperiment()">Finish Experiment</button>
-      </div>
-    </div>
-
-    <div id="thankYou" class="form-block">
-        <h2>Thank you for participating!</h2>
-        <div>Your responses have been recorded.</div>
+        <div id="thankYou" class="form-block" style="display:none;">
+            <h2>Thank you for participating!</h2>
+            <div>Your responses have been recorded.</div>
+        </div>
     </div>
 </div>
 
 <script>
 // --- GLOBAL DATA OBJECT ---
 let participant = {
-  participantId: '',
-  sessionId: '',
-  groupNumber: '',
-  affective: {},
-  probe: [],
-  timestamps: {}
+  participantId: '', sessionId: '', groupNumber: '',
+  affective: {}, probe: [], timestamps: {}
 };
 
-// --- STIMULUS DEFINITIONS FOR PROBE TASK ---
+// --- STIMULUS DEFINITIONS ---
 const shapeSVGs = {
   'sphere': `<svg width="60" height="60" viewBox="0 0 80 80"><defs><radialGradient id="g1" cx="50%" cy="40%" r="50%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#a3f"/></radialGradient></defs><ellipse cx="40" cy="40" rx="32" ry="32" fill="url(#g1)" stroke="#5c2a7c" stroke-width="4"/></svg>`,
   'cube': `<svg width="60" height="60" viewBox="0 0 80 80"><defs><linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#3a6"/></linearGradient></defs><rect x="16" y="16" width="48" height="48" rx="8" fill="url(#g2)" stroke="#2a7c5c" stroke-width="4"/></svg>`,
@@ -205,56 +209,87 @@ const shapeSVGs = {
 };
 const probeSymbolsA = ['sphere', 'pyramid'];
 const probeSymbolsB = ['cube', 'cylinder'];
+const winSound = new Audio("https://orangefreesounds.com/wp-content/uploads/2022/6/Casino-winner-sound-effect.mp3");
 
+// --- CORE LOGIC: Page/Task Management ---
+const allPages = document.querySelectorAll('.page');
 
-// --- PART 1: SLOT MACHINE SCRIPT ---
-const TOTAL_TRIALS = 10;
-const winSound = new Audio("https://orangefreesounds.com/wp-content/uploads/2022/06/Casino-winner-sound-effect.mp3");
+function showPage(pageId) {
+    allPages.forEach(page => {
+        page.style.display = 'none'; // Hide all pages
+    });
+    const pageToShow = document.getElementById(pageId);
+    if (pageToShow) {
+        pageToShow.style.display = 'flex'; // Show the correct page
+    }
+}
+
+// --- TASK 1: Baseline Recording ---
+function startBaseline() {
+    const now = Date.now();
+    participant.timestamps.baseline_start = now;
+    participant.timestamps.experiment_start = now;
+    console.log("Baseline & Experiment Start Timestamp:", now);
+
+    showPage('baselinePage');
+
+    let timeLeft = 120;
+    const timerElement = document.getElementById('baselineTimer');
+    timerElement.textContent = `Time remaining: 2:00`;
+
+    const countdownInterval = setInterval(() => {
+        timeLeft--;
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        const formattedSeconds = seconds < 10 ? '0' + seconds : seconds;
+        timerElement.textContent = `Time remaining: ${minutes}:${formattedSeconds}`;
+
+        if (timeLeft <= 0) {
+            clearInterval(countdownInterval);
+            participant.timestamps.baseline_end = Date.now();
+            console.log("Baseline End Timestamp:", participant.timestamps.baseline_end);
+            showPage('instructionsPage');
+        }
+    }, 1000);
+}
+
+// --- TASK 2 & 3: Instructions & Slot Machine ---
 let trialNum = 0;
 let leaderboard = [];
+const TOTAL_TRIALS = 10;
 
 function startGame() {
   participant.timestamps.slotMachine_start = Date.now();
   console.log("Slot Machine Start Timestamp:", participant.timestamps.slotMachine_start);
-
-  document.getElementById('instructionsPart').style.display = 'none';
-  document.getElementById('slotMachinePart').style.display = 'block';
+  showPage('slotMachinePage');
 
   trialNum = 0;
   leaderboard = [{name: "You", score: 100}];
-  for (let i = 1; i <= 10; i++) {
-    leaderboard.push({name: "Player " + i, score: 100 - i});
-  }
+  for (let i = 1; i <= 10; i++) leaderboard.push({name: "Player " + i, score: 100 - i});
   
   document.querySelectorAll('.chip').forEach(chip => {
-    chip.onclick = function() {
+    chip.onclick = () => {
       document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
       chip.classList.add('selected');
     }
   });
-  
   updateGameUI();
   renderLeaderboard();
 }
 
 function updateGameUI() {
   document.getElementById('trialInfo').innerHTML = `<b>Trial ${trialNum + 1} of ${TOTAL_TRIALS}</b>`;
-  renderReels();
-  document.getElementById('gameMessage').innerHTML = '';
-  document.getElementById('spinBtn').disabled = false;
-  document.querySelectorAll('.chip').forEach(chip => chip.classList.remove('selected'));
-  document.querySelector('.chip[data-value="1"]').classList.add('selected');
-}
-
-function renderReels() {
   const reelsDiv = document.getElementById('reels');
   reelsDiv.innerHTML = '';
   for (let i = 0; i < 3; i++) {
     const div = document.createElement('div');
     div.className = 'reel';
-    div.innerHTML = ''; // Keep reels blank
     reelsDiv.appendChild(div);
   }
+  document.getElementById('gameMessage').innerHTML = '';
+  document.getElementById('spinBtn').disabled = false;
+  document.querySelectorAll('.chip').forEach(chip => chip.classList.remove('selected'));
+  document.querySelector('.chip[data-value="1"]').classList.add('selected');
 }
 
 function renderLeaderboard() {
@@ -271,47 +306,31 @@ function renderLeaderboard() {
 function spin() {
   document.getElementById('spinBtn').disabled = true;
   document.getElementById('gameMessage').innerHTML = '';
-  
   setTimeout(() => {
     winSound.play().catch(e => console.error("Audio play failed:", e));
-    
-    setTimeout(() => {
-        winSound.pause();
-        winSound.currentTime = 0;
-    }, 2000);
+    setTimeout(() => { winSound.pause(); winSound.currentTime = 0; }, 2000);
 
-    document.getElementById('gameMessage').innerHTML = `<span class="sparkle-text">WIN!</span>`;
+    document.getElementById('gameMessage').innerHTML = `<span class="sparkle-text">Congratulations , You Win!</span>`;
     trialNum++;
-
     const nextTrialDelay = 2200; 
-    if (trialNum < TOTAL_TRIALS) {
-      setTimeout(updateGameUI, nextTrialDelay);
-    } else {
-      setTimeout(endGame, nextTrialDelay);
-    }
+    if (trialNum < TOTAL_TRIALS) setTimeout(updateGameUI, nextTrialDelay);
+    else setTimeout(endGame, nextTrialDelay);
   }, 1000);
 }
 
 function endGame() {
-  const now = Date.now();
-  participant.timestamps.slotMachine_end = now;
-  participant.timestamps.participantInfo_start = now;
-  console.log("Slot Machine End & Participant Info Start Timestamp:", now);
-
-  document.getElementById('slotMachinePart').style.display = 'none';
-  document.getElementById('scalesPart').style.display = 'block';
-  document.getElementById('participantForm').style.display = 'block';
+  participant.timestamps.slotMachine_end = Date.now();
+  participant.timestamps.participantInfo_start = participant.timestamps.slotMachine_end;
+  console.log("Slot Machine End & Participant Info Start:", participant.timestamps.slotMachine_end);
+  showPage('scalesPage');
 }
 
-
-// --- PART 2: SCALES & PROBE SCRIPT ---
-
-document.getElementById('participantForm').onsubmit = function(e) {
+// --- TASK 4, 5, 6: Scales, Probe Task, & Finish ---
+document.getElementById('participantForm').onsubmit = (e) => {
   e.preventDefault();
-  const now = Date.now();
-  participant.timestamps.participantInfo_end = now;
-  participant.timestamps.affectiveRating_start = now;
-  console.log("Participant Info End & Affective Rating Start Timestamp:", now);
+  participant.timestamps.participantInfo_end = Date.now();
+  participant.timestamps.affectiveRating_start = participant.timestamps.participantInfo_end;
+  console.log("Participant Info End & Affective Rating Start:", participant.timestamps.participantInfo_end);
 
   participant.participantId = document.getElementById('participantId').value.trim();
   participant.sessionId = document.getElementById('sessionId').value.trim();
@@ -321,23 +340,20 @@ document.getElementById('participantForm').onsubmit = function(e) {
   document.getElementById('affectiveForm').style.display = 'block';
 };
 
-document.getElementById('affectiveForm').onsubmit = function(e) {
+document.getElementById('affectiveForm').onsubmit = (e) => {
   e.preventDefault();
-  const now = Date.now();
-  participant.timestamps.affectiveRating_end = now;
-  participant.timestamps.probeTask_start = now;
-  console.log("Affective Rating End & Probe Task Start Timestamp:", now);
+  participant.timestamps.affectiveRating_end = Date.now();
+  participant.timestamps.probeTask_start = participant.timestamps.affectiveRating_end;
+  console.log("Affective Rating End & Probe Task Start:", participant.timestamps.affectiveRating_end);
 
   participant.affective.valence = Number(document.getElementById('valenceSlider').value);
   participant.affective.arousal = Number(document.getElementById('arousalSlider').value);
-  participant.affective.reactionTime = now - participant.timestamps.affectiveRating_start;
+  participant.affective.reactionTime = participant.timestamps.affectiveRating_end - participant.timestamps.affectiveRating_start;
   
   document.getElementById('affectiveForm').style.display = 'none';
   showProbeTask();
 };
 
-
-// --- Binary Probe Task ---
 let probePairs = [];
 let currentProbeIndex = 0;
 
@@ -345,13 +361,9 @@ function showProbeTask() {
   document.getElementById('probeTask').style.display = 'block';
   probePairs = [];
   probeSymbolsA.forEach(symA => {
-    probeSymbolsB.forEach(symB => {
-      probePairs.push([symA, symB]);
-    });
+    probeSymbolsB.forEach(symB => probePairs.push([symA, symB]));
   });
-  
   probePairs.sort(() => Math.random() - 0.5);
-
   currentProbeIndex = 0;
   renderNextProbe();
 }
@@ -359,21 +371,17 @@ function showProbeTask() {
 function renderNextProbe() {
     const probeDiv = document.getElementById('probePairs');
     probeDiv.innerHTML = '';
-
     if (currentProbeIndex >= probePairs.length) {
         document.getElementById('finishBtn').style.display = 'inline-block';
         return;
     }
-
     let [a, b] = probePairs[currentProbeIndex];
     if (Math.random() > 0.5) [a, b] = [b, a];
-
     const question = document.createElement('div');
     question.style.fontWeight = 'bold';
     question.style.marginBottom = '12px';
     question.innerText = "Which of these two is more pleasant?";
     probeDiv.appendChild(question);
-
     const pairDiv = document.createElement('div');
     pairDiv.className = 'probe-pair';
     const btnA = document.createElement('button');
@@ -382,7 +390,6 @@ function renderNextProbe() {
     const btnB = document.createElement('button');
     btnB.className = 'probe-btn';
     btnB.innerHTML = shapeSVGs[b];
-
     let probeStart = Date.now();
     btnA.onclick = (e) => { e.preventDefault(); recordProbe(a, b, a, probeStart); };
     btnB.onclick = (e) => { e.preventDefault(); recordProbe(a, b, b, probeStart); };
@@ -393,8 +400,7 @@ function renderNextProbe() {
 
 function recordProbe(itemA, itemB, choice, probeStartTime) {
     participant.probe.push({
-      pair: [itemA, itemB],
-      choice: choice,
+      pair: [itemA, itemB], choice: choice,
       isChoiceA: probeSymbolsA.includes(choice),
       reactionTime: Date.now() - probeStartTime
     });
@@ -402,14 +408,10 @@ function recordProbe(itemA, itemB, choice, probeStartTime) {
     renderNextProbe();
 }
 
-
-// --- FINISH & ONLOAD ---
-
 function finishExperiment() {
-  const now = Date.now();
-  participant.timestamps.probeTask_end = now;
-  participant.timestamps.experiment_end = now;
-  console.log("Probe Task End & Experiment End Timestamp:", now);
+  participant.timestamps.probeTask_end = Date.now();
+  participant.timestamps.experiment_end = participant.timestamps.probeTask_end;
+  console.log("Probe Task End & Experiment End:", participant.timestamps.probeTask_end);
   
   document.getElementById('probeTask').style.display = 'none';
   document.getElementById('thankYou').style.display = 'block';
@@ -424,53 +426,8 @@ function finishExperiment() {
   console.log('Final Participant Data:', participant);
 }
 
-// Handles the initial baseline period
-function startBaseline() {
-    const now = Date.now();
-    participant.timestamps.baseline_start = now;
-    participant.timestamps.experiment_start = now;
-    console.log("Baseline & Experiment Start Timestamp:", now);
-
-    document.getElementById('baselinePart').style.display = 'flex';
-
-    let timeLeft = 120;
-    const timerElement = document.getElementById('baselineTimer');
-    timerElement.textContent = `Time remaining: 2:00`;
-
-    const countdownInterval = setInterval(() => {
-        timeLeft--;
-        const minutes = Math.floor(timeLeft / 60);
-        const seconds = timeLeft % 60;
-        const formattedSeconds = seconds < 10 ? '0' + seconds : seconds;
-        timerElement.textContent = `Time remaining: ${minutes}:${formattedSeconds}`;
-
-        if (timeLeft <= 0) {
-            clearInterval(countdownInterval);
-            
-            const end_now = Date.now();
-            participant.timestamps.baseline_end = end_now;
-            console.log("Baseline End Timestamp:", end_now);
-
-            document.getElementById('baselinePart').style.display = 'none';
-            document.getElementById('instructionsPart').style.display = 'block';
-        }
-    }, 1000);
-}
-
-
+// --- INITIALIZE EXPERIMENT ---
 window.onload = function() {
-    // Hide all task sections initially
-    document.getElementById('instructionsPart').style.display = 'none';
-    document.getElementById('slotMachinePart').style.display = 'none';
-    document.getElementById('scalesPart').style.display = 'none';
-    
-    // Hide sections within the scales part
-    document.getElementById('affectiveForm').style.display = 'none';
-    document.getElementById('probeTask').style.display = 'none';
-    document.getElementById('finishBtn').style.display = 'none';
-    document.getElementById('thankYou').style.display = 'none';
-
-    // Begin the experiment with the baseline task
     startBaseline();
 };
 </script>
