@@ -9,24 +9,37 @@
     .container { max-width: 700px; margin: 0 auto; padding: 24px; }
     .center { text-align: center; }
     
-    /* --- CRITICAL FIX: Ensures elements are always hidden when this class is applied --- */
+    /* --- CRITICAL: Ensures elements are always hidden when this class is applied --- */
     .hidden {
       display: none !important;
+    }
+
+    /* --- NEW: Smooth transition for showing screens --- */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .task-screen:not(.hidden) {
+        animation: fadeIn 0.5s ease-in-out;
     }
 
     /* --- Form & Scale Styles --- */
     .form-block { background: #333; padding: 24px; border-radius: 12px; max-width: 500px; margin: 32px auto; }
     .question { margin-bottom: 18px; }
-    input[type="text"], input[type="number"] { padding: 8px; border-radius: 4px; border: 1px solid #555; background: #444; color: #fff; }
+    input[type="text"], input[type="number"] { padding: 8px; border-radius: 4px; border: 1px solid #555; background: #444; color: #fff; width: 95%; }
     .probe-pair { display: flex; gap: 32px; justify-content: center; margin: 18px 0; }
-    .probe-btn { border: 2px solid #888; background: #222; border-radius: 8px; padding: 8px; cursor: pointer; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;}
+    .probe-btn { border: 2px solid #888; background: #222; border-radius: 8px; padding: 8px; cursor: pointer; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;}
+    .probe-btn:hover { border-color: #0f0; transform: scale(1.05); }
     .probe-btn.selected { border: 2px solid #0f0; }
     .affectiveForm .affective-slider-block { margin: 24px 0; }
     .affectiveForm .affective-slider-label { display: flex; align-items: center; gap: 12px; }
     .affectiveForm .affective-slider { flex-grow: 1; }
     .affectiveForm .affective-slider-caption { text-align: center; margin-top: 8px; font-style: italic; color: #ccc; }
     .affectiveForm .affective-slider-face { width: 42px; height: 42px; }
-    button { padding: 12px 24px; border-radius: 8px; border: none; background: #0a8; color: #fff; font-weight: bold; cursor: pointer; font-size: 1rem;}
+    /* NEW: Slider value display */
+    .affectiveForm .slider-value { font-size: 1.2rem; font-weight: bold; color: #ffd700; min-width: 24px; text-align: center; }
+    button { padding: 12px 24px; border-radius: 8px; border: none; background: #0a8; color: #fff; font-weight: bold; cursor: pointer; font-size: 1rem; transition: background-color 0.2s;}
+    button:hover { background: #0b9; }
     
     /* --- Slot Machine Styles --- */
     .slot-machine-layout { display: flex; flex-direction: row; gap: 32px; align-items: flex-start; }
@@ -40,17 +53,21 @@
     .chips { display: flex; justify-content: center; gap: 18px; margin-bottom: 18px; }
     .chip {
       width: 56px; height: 56px; border-radius: 50%; background: #ffe066;
-      border: 4px solid #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; cursor: pointer; transition: border 0.2s, box-shadow 0.2s;
+      border: 4px solid #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3rem; cursor: pointer; transition: all 0.2s;
       box-shadow: 0 2px 10px #000a;
       margin: 0 2px;
+      color: #3b1e00;
     }
     .chip.selected { border: 4px solid #ff3; box-shadow: 0 0 16px #fff700; }
+    /* NEW: Hover effect for chips */
+    .chip:not(.selected):hover { transform: translateY(-4px); box-shadow: 0 6px 16px #000a; }
     .spin-btn {
       background: linear-gradient(90deg, #ff2d2d 60%, #ffb300 100%);
       color: #fff; padding: 16px 40px; border: none; border-radius: 12px; font-size: 1.5rem; cursor: pointer; margin-bottom: 14px;
       box-shadow: 0 2px 8px #000a, 0 0 16px #fff70055;
-      font-weight: bold; letter-spacing: 1px; transition: filter 0.2s;
+      font-weight: bold; letter-spacing: 1px; transition: filter 0.2s, transform 0.2s;
     }
+    .spin-btn:hover:not(:disabled) { filter: brightness(1.1); transform: scale(1.02); }
     .spin-btn:disabled { background: #888; filter: grayscale(0.5); cursor: not-allowed; }
     .message { font-size: 1.25rem; margin: 14px 0; min-height: 40px;}
     .leaderboard { background: #1a1203; border-radius: 16px; padding: 18px 16px; max-width: 260px; margin: 0; box-shadow: 0 2px 12px #000a; flex: 1;}
@@ -75,7 +92,8 @@
 <body>
 <div class="container">
 
-  <form id="participantForm" class="form-block task-screen">
+  <!-- FIXED: Added 'hidden' class here to ensure all screens are hidden on initial load -->
+  <form id="participantForm" class="form-block task-screen hidden">
     <h2>Participant Information</h2>
     <div class="question"><label>Participant ID: <input type="text" id="participantId" required></label></div>
     <div class="question"><label>Session ID: <input type="text" id="sessionId" required></label></div>
@@ -99,7 +117,7 @@
       <li>Press the <b>SPIN</b> button to play each round.</li>
       <li>Good luck!</li>
     </ul>
-    <div class="center"><button class="spin-btn" onclick="startGame()">Start Game</button></div>
+    <div class="center"><button class="spin-btn" id="startGameBtn">Start Game</button></div>
   </div>
 
   <div id="gameLayout" class="slot-machine-layout task-screen hidden">
@@ -121,7 +139,7 @@
       </div>
       <div class="center message" id="gameMessage"></div>
       <div class="center" style="margin-top:10px;">
-        <button class="spin-btn" id="spinBtn" onclick="spin()">SPIN</button>
+        <button class="spin-btn" id="spinBtn">SPIN</button>
       </div>
     </div>
     <div class="leaderboard" id="leaderboard">
@@ -138,17 +156,23 @@
       <div class="affective-slider-block">
         <div class="affective-slider-caption">“How pleasant or unpleasant does the memory of the slot machine game feel to you right now?”</div>
         <div class="affective-slider-label">
-          <img src="https://img.icons8.com/emoji/48/000000/crying-face.png" class="affective-slider-face" alt="Sad">
+          <!-- REPLACED with inline SVG -->
+          <svg class="affective-slider-face" viewBox="0 0 24 24"><path fill="#f44336" d="M12,2C6.47,2,2,6.47,2,12s4.47,10,10,10s10-4.47,10-10S17.53,2,12,2z M8.5,14.5C7.67,14.5,7,13.83,7,13s0.67-1.5,1.5-1.5S10,12.17,10,13S9.33,14.5,8.5,14.5z M12,18c-2.28,0-4.22-1.66-5-4h10C16.22,16.34,14.28,18,12,18z M15.5,14.5c-0.83,0-1.5-0.67-1.5-1.5s0.67-1.5,1.5-1.5s1.5,0.67,1.5,1.5S16.33,14.5,15.5,14.5z"/></svg>
           <input type="range" min="1" max="9" value="5" class="affective-slider" id="valenceSlider">
-          <img src="https://em-content.zobj.net/thumbs/240/apple/354/grinning-face_1f600.png" alt="Happy Emoji" width="42" height="42">
+          <span class="slider-value" id="valenceValue">5</span>
+          <!-- REPLACED with inline SVG -->
+          <svg class="affective-slider-face" viewBox="0 0 24 24"><path fill="#8bc34a" d="M12,2C6.48,2,2,6.48,2,12s4.48,10,10,10s10-4.48,10-10S17.52,2,12,2z M12,18c-3.31,0-6-2.69-6-6h2c0,2.21,1.79,4,4,4s4-1.79,4-4h2C18,15.31,15.31,18,12,18z M8.5,11.5C7.67,11.5,7,10.83,7,10s0.67-1.5,1.5-1.5S10,9.17,10,10S9.33,11.5,8.5,11.5z M15.5,11.5c-0.83,0-1.5-0.67-1.5-1.5s0.67-1.5,1.5-1.5s1.5,0.67,1.5,1.5S16.33,11.5,15.5,11.5z"/></svg>
         </div>
       </div>
       <div class="affective-slider-block">
         <div class="affective-slider-caption">“How emotionally activated or calm do you feel while recalling the memory of the slot machine game?”</div>
         <div class="affective-slider-label">
-          <img src="https://img.icons8.com/emoji/48/000000/sleeping-face.png" class="affective-slider-face" alt="Low arousal">
+          <!-- REPLACED with inline SVG -->
+          <svg class="affective-slider-face" viewBox="0 0 24 24"><path fill="#2196f3" d="M12,2C6.48,2,2,6.48,2,12s4.48,10,10,10s10-4.48,10-10S17.52,2,12,2z M8.5,12.5h-2c0-1.67,1-3,2.5-3s2.5,1.33,2.5,3h-2C9.5,12.5,9.2,12,8.5,12z M15.5,12.5h-2c-0.7,0-1-0.5-1-1.5c0-1.67,1-3,2.5-3s2.5,1.33,2.5,3h-2C16.5,12.5,16.2,12,15.5,12z M12,18c-2.28,0-4.22-1.66-5-4h10C16.22,16.34,14.28,18,12,18z"/></svg>
           <input type="range" min="1" max="9" value="5" class="affective-slider" id="arousalSlider">
-          <img src="https://img.icons8.com/emoji/48/000000/astonished-face.png" class="affective-slider-face" alt="High arousal">
+          <span class="slider-value" id="arousalValue">5</span>
+          <!-- REPLACED with inline SVG -->
+          <svg class="affective-slider-face" viewBox="0 0 24 24"><path fill="#ffeb3b" d="M12,2C6.48,2,2,6.48,2,12s4.48,10,10,10s10-4.48,10-10S17.52,2,12,2z M9.5,15.5c-0.83,0-1.5-0.67-1.5-1.5s0.67-1.5,1.5-1.5s1.5,0.67,1.5,1.5S10.33,15.5,9.5,15.5z M12,14c-1.1,0-2-0.9-2-2s0.9-2,2-2s2,0.9,2,2S13.1,14,12,14z M14.5,15.5c-0.83,0-1.5-0.67-1.5-1.5s0.67-1.5,1.5-1.5s1.5,0.67,1.5,1.5S15.33,15.5,14.5,15.5z"/></svg>
         </div>
       </div>
       <button class="submit-btn" type="submit">Continue</button>
@@ -158,7 +182,7 @@
     <h2>Choice Task</h2>
     <div id="probePairs"></div>
     <div class="center" style="margin-top: 20px;">
-        <button id="finishBtn" onclick="finishExperiment()" disabled>Finish</button>
+        <button id="finishBtn" disabled>Finish</button>
     </div>
   </div>
 
@@ -178,7 +202,7 @@ const shapeSVGs = {
   'sphere': `<svg width="50" height="50" viewBox="0 0 80 80"><defs><radialGradient id="g1" cx="50%" cy="40%" r="50%"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#a3f"/></radialGradient></defs><ellipse cx="40" cy="40" rx="32" ry="32" fill="url(#g1)" stroke="#5c2a7c" stroke-width="4"/></svg>`,
   'cube': `<svg width="50" height="50" viewBox="0 0 80 80"><defs><linearGradient id="g2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#3a6"/></linearGradient></defs><rect x="16" y="16" width="48" height="48" rx="8" fill="url(#g2)" stroke="#2a7c5c" stroke-width="4"/></svg>`,
   'pyramid': `<svg width="50" height="50" viewBox="0 0 80 80"><defs><linearGradient id="g3" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#a3f"/></linearGradient></defs><polygon points="40,12 68,68 12,68" fill="url(#g3)" stroke="#5c2a7c" stroke-width="4"/></svg>`,
-  'cylinder': `<svg width="50" height="50" viewBox="0 0 80 80"><defs><linearGradient id="g4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#3a6"/></linearGradient></defs><ellipse cx="40" cy="20" rx="24" ry="10" fill="#fff" opacity="0.5"/><rect x="16" y="20" width="48" height="40" rx="24" fill="url(#g4)" stroke="#2a7c5c" stroke-width="4"/><ellipse cx="40" cy="60" rx="24" ry="10" fill="#3a6" stroke="#2a7c5c" stroke-width="4"/></svg>`
+  'cylinder': `<svg width="50" height="50" viewBox="0 0 80 80"><defs><linearGradient id="g4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#3a6"/></linearGradient></defs><ellipse cx="40" cy="20" rx="24" ry="10" fill="#fff" opacity="0.5"/><rect x="16" y="20" width="48" height="40" fill="url(#g4)" stroke="#2a7c5c" stroke-width="4"/><ellipse cx="40" cy="60" rx="24" ry="10" fill="#3a6" stroke="#2a7c5c" stroke-width="4"/></svg>`
 };
 const rewardSymbols = ['sphere', 'pyramid'];
 const nogainSymbols = ['cube', 'cylinder'];
@@ -463,11 +487,31 @@ function finishExperiment() {
   console.log('Final Participant Data:', participantData);
 }
 
-// Set the initial view when the page loads
+// --- INITIALIZATION ---
 window.onload = function() {
+    // Set the initial view. This will now reliably show the first form.
     showView('participantForm');
+
+    // Add event listeners
+    document.getElementById('startGameBtn').addEventListener('click', startGame);
+    document.getElementById('spinBtn').addEventListener('click', spin);
+    document.getElementById('finishBtn').addEventListener('click', finishExperiment);
+
+    // Add slider value listeners
+    const valenceSlider = document.getElementById('valenceSlider');
+    const valenceValue = document.getElementById('valenceValue');
+    valenceSlider.addEventListener('input', () => {
+        valenceValue.textContent = valenceSlider.value;
+    });
+
+    const arousalSlider = document.getElementById('arousalSlider');
+    const arousalValue = document.getElementById('arousalValue');
+    arousalSlider.addEventListener('input', () => {
+        arousalValue.textContent = arousalSlider.value;
+    });
 };
 
 </script>
 </body>
 </html>
+
