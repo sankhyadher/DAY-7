@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -29,7 +30,7 @@
     /* --- End of Layout --- */
 
     .center { text-align: center; }
-    
+
     .hidden {
       display: none !important;
     }
@@ -64,12 +65,12 @@
     .affectiveForm .slider-value { font-size: 1.2rem; font-weight: bold; color: #ffd700; min-width: 24px; text-align: center; }
     button { padding: 12px 24px; border-radius: 8px; border: none; background: #0a8; color: #fff; font-weight: bold; cursor: pointer; font-size: 1rem; transition: background-color 0.2s;}
     button:hover { background: #0b9; }
-    
+
     /* --- Slot Machine Styles --- */
-    .slot-machine-layout { 
-      display: flex; 
-      flex-direction: row; 
-      gap: 32px; 
+    .slot-machine-layout {
+      display: flex;
+      flex-direction: row;
+      gap: 32px;
       align-items: flex-start;
       width: 100%;
       max-width: 900px;
@@ -184,7 +185,7 @@
         Please rate the following questions using <b>BOTH sliders</b> based on the memory of the slot machine game you just played.
       </div>
       <div class="affective-slider-block">
-        <div class="affective-slider-caption">“Rate the level of pleasantness or unpleasantness while playing the game by using the slider below. The scale ranges from extremely unpleasant to extremely pleasant . The middle of the scale represents a neutral feeling."</div>
+        <div class="affective-slider-caption">“Rate the level of pleasantness or unpleasantness while playing the game by using the slider. The scale ranges from extremely unpleasant to extremely pleasant . The middle of the scale represents a neutral feeling."</div>
         <div class="affective-slider-label">
           <img src="https://img.icons8.com/emoji/48/000000/crying-face.png" class="affective-slider-face" alt="Sad">
           <input type="range" min="1" max="9" value="5" class="affective-slider" id="valenceSlider">
@@ -193,7 +194,7 @@
         </div>
       </div>
       <div class="affective-slider-block">
-        <div class="affective-slider-caption">“How intense or calm do you feel while playing the slot machine game by using the slider below. The scale ranges from  a very low level of arousal to very high level of arousal. ”</div>
+        <div class="affective-slider-caption">“How intense or calm do you feel while playing the slot machine game by using the slider . The scale ranges from  a very low level of arousal to very high level of arousal. ”</div>
         <div class="affective-slider-label">
           <img src="https://img.icons8.com/emoji/48/000000/sleeping-face.png" class="affective-slider-face" alt="Low arousal">
           <input type="range" min="1" max="9" value="5" class="affective-slider" id="arousalSlider">
@@ -245,6 +246,8 @@ let participantData = {
     groupNumber: '',
     timestamps: {
         experiment_startTime: null,
+        participantForm_startTime: null,
+        participantForm_endTime: null,
         baseline_startTime: null,
         baseline_endTime: null,
         instructions_startTime: null,
@@ -257,6 +260,7 @@ let participantData = {
         probe_endTime: null,
         experiment_endTime: null,
     },
+    slotMachine: [], // {trial: 1, bet: 1, win: 1, timestamp: 1234}
     affective: {
         valence: null,
         arousal: null,
@@ -321,9 +325,11 @@ document.getElementById('participantForm').onsubmit = function(e) {
   participantData.participantId = document.getElementById('participantId').value.trim();
   participantData.sessionId = document.getElementById('sessionId').value.trim();
   participantData.groupNumber = document.getElementById('groupNumber').value;
-  
-  participantData.timestamps.experiment_startTime = Date.now();
-  
+
+  participantData.timestamps.participantForm_endTime = Date.now();
+  participantData.timestamps.experiment_startTime = participantData.timestamps.participantForm_startTime;
+
+
   startBaseline();
 };
 
@@ -365,7 +371,7 @@ function startGame() {
   for (let i = 1; i <= 10; i++) {
     leaderboard.push({name: "Player " + (i + 1), score: 100 - i});
   }
-  
+
   updateGameUI();
   renderLeaderboard();
 
@@ -383,7 +389,7 @@ function updateGameUI() {
   document.getElementById('trialInfo').innerHTML = `Trial ${trialNum + 1} of ${TOTAL_TRIALS}`;
   document.getElementById('gameMessage').innerHTML = 'Place your bet and spin!';
   document.getElementById('spinBtn').disabled = false;
-  
+
   // Default to $1 bet
   document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
   document.querySelector('.chip[data-value="1"]').classList.add('selected');
@@ -405,6 +411,16 @@ function spin() {
   document.getElementById('spinBtn').disabled = true;
   document.getElementById('gameMessage').innerHTML = 'Spinning...';
 
+  // Record the bet for this trial
+  const currentTrialData = {
+      trial: trialNum + 1,
+      bet: betAmount,
+      win: 0, // Default to no win
+      timestamp: Date.now()
+  };
+  participantData.slotMachine.push(currentTrialData);
+
+
   const reelsDiv = document.getElementById('reels');
   const reels = reelsDiv.querySelectorAll('.reel');
   let flashCount = 0;
@@ -421,9 +437,16 @@ function spin() {
         reel.style.backgroundColor = '#fffbe6'; // Reset color
     });
 
+    // Simulate a win (for now, always a win)
     document.getElementById('gameMessage').innerHTML = `<span class="sparkle-text">WIN!</span>`;
     playWinSound(); // Play the winning sound
-    
+
+    // Update win status and leaderboard score
+    currentTrialData.win = 1;
+    leaderboard[0].score += betAmount;
+    renderLeaderboard();
+
+
     trialNum++;
     if (trialNum < TOTAL_TRIALS) {
       setTimeout(() => {
@@ -498,7 +521,7 @@ function showProbeTask() {
     const btnB = document.createElement('button');
     btnB.className = 'probe-btn';
     btnB.innerHTML = shapeSVGs[b];
-    
+
     let probeStart = Date.now();
     btnA.onclick = (e) => { e.preventDefault(); recordProbe(a,b,a,probeStart); };
     btnB.onclick = (e) => { e.preventDefault(); recordProbe(a,b,b,probeStart); };
@@ -528,7 +551,7 @@ function finishExperiment() {
   participantData.timestamps.experiment_endTime = Date.now();
 
   showView('thankYou');
-  
+
   // Download data
   const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(participantData, null, 2));
   const dlAnchor = document.createElement('a');
@@ -546,6 +569,7 @@ function finishExperiment() {
 window.onload = function() {
     // Set the initial view. This will now reliably show the first form.
     showView('participantForm');
+    participantData.timestamps.participantForm_startTime = Date.now();
 
     // Add event listeners
     document.getElementById('startGameBtn').addEventListener('click', startGame);
@@ -569,4 +593,3 @@ window.onload = function() {
 </script>
 </body>
 </html>
-
